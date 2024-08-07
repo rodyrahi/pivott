@@ -86,7 +86,7 @@ class imputeWidget(QWidget):
                 imputer.fit(self.df.dataframe[[column]])
                 self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
 
-                self.parent.df = self.df
+                self.parent.df.dataframe[column] = self.df.dataframe[column]
                 self.parent.create_table()
 
                 
@@ -98,7 +98,7 @@ class imputeWidget(QWidget):
                 self.parent.checked.append((column, self.df.dataframe.copy()))
             else:
                
-                self.df.dataframe = column_found1[1]
+                self.df.dataframe[column] = column_found1[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
                
@@ -106,7 +106,7 @@ class imputeWidget(QWidget):
         else: 
             for i in self.parent.unchecked:
                 if str(i[0]) == column:
-                    self.df.dataframe = i[1]
+                    self.df.dataframe[column] = i[1][column]
                     self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
                     break
