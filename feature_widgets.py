@@ -4,6 +4,14 @@ from custom_widgets import *
 from sklearn.impute import SimpleImputer
 import numpy as np
 
+
+def inArray(parent , column):
+    for l in parent:
+        if str(l[0]) == column:
+            return l   
+    return None
+
+
 class imputeWidget(QWidget):
     def __init__(self, df, parent):
         super().__init__()
@@ -79,7 +87,7 @@ class imputeWidget(QWidget):
             
           
            
-            column_found = next((l for l in self.parent.unchecked if str(l[0]) == column), None)
+            column_found = inArray(self.parent.unchecked, column)
             if column_found is None:
                 self.parent.unchecked.append((column, self.df.dataframe.copy()))
 
@@ -93,24 +101,26 @@ class imputeWidget(QWidget):
 
             
 
-            column_found1 = next((i for i in self.parent.checked if str(i[0]) == column), None)
+            column_found1 =  inArray(self.parent.checked, column)
             if column_found1 is None:
                 self.parent.checked.append((column, self.df.dataframe.copy()))
             else:
-               
                 self.df.dataframe[column] = column_found1[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
                
             
         else: 
-            for i in self.parent.unchecked:
-                if str(i[0]) == column:
-                    self.df.dataframe[column] = i[1][column]
-                    self.parent.df.dataframe = self.df.dataframe
-                    self.parent.create_table()
-                    break
-        
+            col = inArray(self.parent.unchecked, column)
+            if col:
+                self.df.dataframe[column] = col[1][column]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+                
+
+
+
+
 
 
 class dropnaWidget(QWidget):
