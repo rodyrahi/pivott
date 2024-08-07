@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from custom_widgets import *
 from sklearn.impute import SimpleImputer
@@ -17,7 +17,11 @@ class imputeWidget(QWidget):
         scroll_widget = QWidget()
         scroll_widget.acceptDrops = True
         layout = QVBoxLayout(scroll_widget)
-        for column in self.df.dataframe.columns:
+        
+        all_na_cols = self.df.dataframe.columns[self.df.dataframe.isna().any()].tolist()
+      
+
+        for column in all_na_cols:
             current_df = self.df
             hbox = QHBoxLayout()
 
@@ -36,17 +40,20 @@ class imputeWidget(QWidget):
 
             hbox.addWidget(impute_checkbox)
             impute_checkbox.stateChanged.connect(lambda current_df=current_df,  checkbox= impute_checkbox,  col=column, combo=strategy_combo: self.impute_column( checkbox ,col, combo.currentText()))
-    
+            hbox.setAlignment(Qt.AlignTop)
             layout.addLayout(hbox)        
 
         scroll_area.setWidget(scroll_widget)
         scroll_area.setWidgetResizable(True)
 
         main_layout = QVBoxLayout(self)
+        
+
         main_layout.addWidget(scroll_area)
         scroll_area.setAcceptDrops(True)
         self.setMaximumSize(300, 300)
         self.setAcceptDrops(True)
+        
         self.setLayout(main_layout)
         
         
@@ -70,24 +77,31 @@ class imputeWidget(QWidget):
             
             
             
-            # if (column , self.df.dataframe.copy()) not in self.parent.unchecked:
-            #     self.parent.unchecked.append((column, self.df.dataframe.copy()))
+          
            
             column_found = next((l for l in self.parent.unchecked if str(l[0]) == column), None)
             if column_found is None:
                 self.parent.unchecked.append((column, self.df.dataframe.copy()))
 
-            print(self.parent.unchecked)            
+                imputer.fit(self.df.dataframe[[column]])
+                self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
 
-            imputer.fit(self.df.dataframe[[column]])
-            self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
+                self.parent.df = self.df
+                self.parent.create_table()
 
-            self.parent.df = self.df
-            self.parent.create_table()
+                
 
-            column_found = next((i for i in self.parent.checked if str(i[0]) == column), None)
-            if not column_found:
+            
+
+            column_found1 = next((i for i in self.parent.checked if str(i[0]) == column), None)
+            if column_found1 is None:
                 self.parent.checked.append((column, self.df.dataframe.copy()))
+            else:
+               
+                self.df.dataframe = column_found1[1]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+               
             
         else: 
             for i in self.parent.unchecked:
@@ -113,11 +127,11 @@ class dropnaWidget(QWidget):
         scroll_widget.acceptDrops = True
         layout = QVBoxLayout(scroll_widget)
 
-        allcolumns = ["All"]+self.df.dataframe.columns.tolist()
-
+        allcolumns = ["All"]+self.df.dataframe.columns[self.df.dataframe.isna().any()].tolist()
+      
         for column in allcolumns:
 
-            columnname = column
+           
             hbox = QHBoxLayout()
 
             hbox.addWidget(QLabel(column))
