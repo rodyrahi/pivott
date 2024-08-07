@@ -12,6 +12,8 @@ from custom_widgets import *
 
 
 
+
+
 class dragableListWidget(QListWidget):
     def __init__(self , df):
         super().__init__()
@@ -91,12 +93,27 @@ class TwoColumnWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.df = None
+        self.filepath = None
+
+        self.checked = []
+        self.unchecked = []
+
         self.mainLayout = QHBoxLayout()
         self.column0Layout = QVBoxLayout()
         self.column1Layout = QVBoxLayout()
+
+
+        self.filecolumnLayout = QVBoxLayout()
+        self.featurescolumnLayout = QVBoxLayout()
+
+        
         self.column2Layout = QVBoxLayout()
+
+
+
         self.df_widget = None
         self.imputewidget = None
+        self.drop_nanwidget = None
 
         self.initUI()
 
@@ -107,14 +124,53 @@ class TwoColumnWindow(QWidget):
         
         select_button = Button('Select File')
         select_button.clicked.connect(self.set_df)
-        self.column1Layout.addWidget(select_button)
+        self.filecolumnLayout.addWidget(select_button)
 
+    
        
-        self.column1Layout.addWidget(QCheckBox('Drop Duplicates'))
+        
+        self.column1Layout.setAlignment(Qt.AlignTop)
+
+        
+        # Add columns to the main layout
+        
+        self.mainLayout.addLayout(self.column0Layout)
+        self.mainLayout.addLayout(self.column1Layout)
+        self.mainLayout.addLayout(self.column2Layout)
+        self.column1Layout.addLayout(self.filecolumnLayout)
+        self.column1Layout.addLayout(self.featurescolumnLayout)
+        
+
+        # Set the main layout for the window
+        self.setLayout(self.mainLayout)
+
+        # Set the window properties
+        self.setWindowTitle('Pivot')
+        self.setGeometry(300, 100, 1000, 600)
+    
+ 
+    def create_list(self):
+        if self.df is None:
+            return None
+        self.column0Layout.removeWidget(dragableListWidget(self.df))
+        self.column0Layout.addWidget(dragableListWidget(self.df))
+
+
+    def create_df_widgets(self):
+
+        self.remove_all_widgets(self.column0Layout)
+        self.remove_all_widgets(self.featurescolumnLayout)
+
+        self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
+
+        drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=dropnaWidget )
+        self.featurescolumnLayout.addWidget(drop_nan_checkbox.cb)
+        drop_nan_checkbox.cb.stateChanged.connect(lambda:drop_nan_checkbox.visbility())
+
       
-        impute_checkbox = QCheckBox('Impute Missing Values')
-        self.column1Layout.addWidget(impute_checkbox)
-        impute_checkbox.stateChanged.connect(lambda:self.impute_dataframe(impute_checkbox))
+        impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=imputeWidget )
+        self.featurescolumnLayout.addWidget(impute_checkbox.cb)
+        impute_checkbox.cb.stateChanged.connect(lambda:impute_checkbox.visbility())
 
 
         # Create an empty QTableWidget
@@ -126,69 +182,34 @@ class TwoColumnWindow(QWidget):
         # Add the empty table to column2Layout
         self.column2Layout.addWidget(self.empty_table)
 
-     
-       
-        
-        self.column1Layout.setAlignment(Qt.AlignTop)
-
-
-        # Add columns to the main layout
-        self.mainLayout.addLayout(self.column0Layout)
-        self.mainLayout.addLayout(self.column1Layout)
-        self.mainLayout.addLayout(self.column2Layout)
-        
-
-        # Set the main layout for the window
-        self.setLayout(self.mainLayout)
-
-        # Set the window properties
-        self.setWindowTitle('Pivot')
-        self.setGeometry(300, 100, 1000, 600)
-    
-    def create_impute_widget(self):
-        if self.df is None:
-            return None
-        self.column1Layout.removeWidget(self.imputewidget)
-        
-        self.imputewidget = imputeWidget(self.df , parent=self)
-        self.imputewidget.hide()
-        self.column1Layout.addWidget(self.imputewidget)
-    def create_list(self):
-        if self.df is None:
-            return None
-        self.column0Layout.removeWidget(dragableListWidget(self.df))
-        self.column0Layout.addWidget(dragableListWidget(self.df))
-
     def set_df(self):
         file_path, _ = QFileDialog().getOpenFileName()
+        self.filepath = file_path
         self.df = dataframe(file_path)
 
-        
+        self.create_df_widgets()
         self.create_table()
-        self.create_impute_widget()
         self.create_list()
+       
+        
 
     
     def create_table(self):
         if self.df is None:
             return None
         
-        while self.column2Layout.count():
-            child = self.column2Layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+
+        self.remove_all_widgets(self.column2Layout)
 
         self.df_widget = tableWidget(self.df.dataframe)
         self.column2Layout.addWidget(self.df_widget)
     
-    def impute_dataframe(self , checkbox):
 
-        if self.df is None:
-            return None
-        if checkbox.isChecked():
-            self.imputewidget.show()
-        else:
-            self.imputewidget.hide()
+    def remove_all_widgets(self , layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
         
 
             

@@ -10,9 +10,6 @@ class dataframe(pd.DataFrame):
     def file_to_dataframe(self):
         return pd.read_csv(self.file)
     
-    def drop_duplicates(self):
-        return self.dataframe.drop_duplicates()
-     
         
     
     
