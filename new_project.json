@@ -1,0 +1,8 @@
+{
+    "impute" : {
+        "col" : ["age"]
+    },
+    "impute2" : {
+        "col" : ["age"]
+    }
+}

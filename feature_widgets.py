@@ -8,7 +8,8 @@ import numpy as np
 def inArray(parent , column):
     for l in parent:
         if str(l[0]) == column:
-            return l   
+            return l
+         
     return None
 
 
@@ -70,7 +71,7 @@ class imputeWidget(QWidget):
     def impute_column(self  , checkbox ,column, strategy):
         
        
-
+        
          
         if checkbox.isChecked():
             
@@ -87,9 +88,8 @@ class imputeWidget(QWidget):
             
           
            
-            column_found = inArray(self.parent.unchecked, column)
-            if column_found is None:
-                self.parent.unchecked.append((column, self.df.dataframe.copy()))
+            
+            if checkbox.save_unchecked(self.parent , self.df , column , 'impute'):
 
                 imputer.fit(self.df.dataframe[[column]])
                 self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
@@ -99,29 +99,23 @@ class imputeWidget(QWidget):
 
                 
 
-            
+            column_found1 = checkbox.save_checked(self.parent , self.df , column , 'impute')
+            print(column_found1)
+            if column_found1:
 
-            column_found1 =  inArray(self.parent.checked, column)
-            if column_found1 is None:
-                self.parent.checked.append((column, self.df.dataframe.copy()))
-            else:
                 self.df.dataframe[column] = column_found1[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
                
             
         else: 
-            col = inArray(self.parent.unchecked, column)
+            col = inArray(self.parent.unchecked, column+'impute')
             if col:
+
                 self.df.dataframe[column] = col[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
                 
-
-
-
-
-
 
 class dropnaWidget(QWidget):
     def __init__(self, df, parent):
@@ -176,3 +170,106 @@ class dropnaWidget(QWidget):
         self.parent.create_table()
 
 
+class outlierWidget(QWidget):
+    def __init__(self, df, parent):
+        super().__init__()
+        self.setAcceptDrops(True)
+        self.df = df
+        self.parent = parent
+        self.initUI()
+    
+    def initUI(self):
+    
+        scroll_area = QScrollArea()
+        scroll_widget = QWidget()
+        scroll_widget.acceptDrops = True
+        layout = QVBoxLayout(scroll_widget)
+        
+        cols = self.df.dataframe.columns
+      
+        print(cols)
+        for column in cols:
+            current_df = self.df
+            hbox = QHBoxLayout()
+
+            hbox.addWidget(QLabel(column))
+    
+            strategy_combo = QComboBox()
+            strategy_combo.addItems(['IQR', 'Z-Score'])
+            strategy_combo.setEditable(True)
+            hbox.addWidget(strategy_combo)
+            
+            cap_checkbox = SQCheckBox("cap")
+                
+            
+           
+                
+
+            hbox.addWidget(cap_checkbox)
+            cap_checkbox.stateChanged.connect(lambda  checkbox= cap_checkbox,  col=column, combo=strategy_combo: self.cap_column( checkbox ,col, combo.currentText()))
+            hbox.setAlignment(Qt.AlignTop)
+            layout.addLayout(hbox) 
+
+        scroll_area.setWidget(scroll_widget)
+        scroll_area.setWidgetResizable(True)
+
+        main_layout = QVBoxLayout(self)
+        
+
+        main_layout.addWidget(scroll_area)
+        scroll_area.setAcceptDrops(True)
+        self.setMaximumSize(300, 300)
+        self.setAcceptDrops(True)
+        
+        self.setLayout(main_layout)
+        
+        
+
+
+    def cap_column(self  , checkbox ,column, strategy):
+        
+       
+        
+         
+        if checkbox.isChecked():
+            
+            if strategy == 'IQR':
+                fill_value = 0  
+                imputer = SimpleImputer(missing_values=np.nan, strategy=strategy, fill_value=fill_value)
+            elif strategy == 'Z-Score':
+                imputer = SimpleImputer(missing_values=np.nan, strategy=strategy)
+            else:
+                imputer = SimpleImputer(missing_values=np.nan, strategy='constant', fill_value=strategy)
+            
+            
+            
+            
+          
+           
+            
+            if checkbox.save_unchecked(self.parent , self.df , column , 'impute'):
+
+                imputer.fit(self.df.dataframe[[column]])
+                self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
+
+                self.parent.df.dataframe[column] = self.df.dataframe[column]
+                self.parent.create_table()
+
+                
+
+            column_found1 = checkbox.save_checked(self.parent , self.df , column , 'impute')
+            print(column_found1)
+            if column_found1:
+
+                self.df.dataframe[column] = column_found1[1][column]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+               
+            
+        else: 
+            col = inArray(self.parent.unchecked, column+'impute')
+            if col:
+
+                self.df.dataframe[column] = col[1][column]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()

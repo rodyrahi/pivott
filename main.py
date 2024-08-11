@@ -4,7 +4,7 @@ import qdarkstyle
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-
+import json
 from dataframe_widget import *
 from feature_widgets import *
 from custom_widgets import *
@@ -14,22 +14,22 @@ from custom_widgets import *
 
 
 
-class dragableListWidget(QListWidget):
-    def __init__(self , df):
-        super().__init__()
-        self.setAcceptDrops(True)
-        self.df = df
-        self.initUI()
+# class dragableListWidget(QListWidget):
+#     def __init__(self , df):
+#         super().__init__()
+#         self.setAcceptDrops(True)
+#         self.df = df
+#         self.initUI()
         
 
-    def initUI(self):
-        self.setStyleSheet("max-width: 150px;")
-        for column in self.df.dataframe.columns:
-            item = QListWidgetItem(column)
+#     def initUI(self):
+#         self.setStyleSheet("max-width: 150px;")
+#         for column in self.df.dataframe.columns:
+#             item = QListWidgetItem(column)
             
-            self.setDragDropMode(QAbstractItemView.InternalMove)
+#             self.setDragDropMode(QAbstractItemView.InternalMove)
             
-            self.addItem(item)
+#             self.addItem(item)
 
 class tableWidget(QWidget):
         def __init__(self, dataframe):
@@ -120,11 +120,21 @@ class TwoColumnWindow(QWidget):
     def initUI(self):
         # Create the main layout
 
+
         
+        open_project = Button('Open Project')
+        open_project.clicked.connect(self.open_project)
+        self.filecolumnLayout.addWidget(open_project)
         
+
+        new_project_button = Button('New Project')
+        self.filecolumnLayout.addWidget(new_project_button)
+
+
         select_button = Button('Select File')
         select_button.clicked.connect(self.set_df)
         self.filecolumnLayout.addWidget(select_button)
+
 
     
        
@@ -149,19 +159,29 @@ class TwoColumnWindow(QWidget):
         self.setGeometry(300, 100, 1000, 600)
     
  
-    def create_list(self):
-        if self.df is None:
-            return None
-        self.column0Layout.removeWidget(dragableListWidget(self.df))
-        self.column0Layout.addWidget(dragableListWidget(self.df))
+    # def create_list(self):
+    #     if self.df is None:
+    #         return None
+    #     self.column0Layout.removeWidget(dragableListWidget(self.df))
+    #     self.column0Layout.addWidget(dragableListWidget(self.df))
 
-
+    def open_project(self):
+        project_path, _ = QFileDialog().getOpenFileName()
+        with open(project_path, 'r') as file:
+            jsonfile = json.load(file)
+        
+        for i in jsonfile.items():
+                print(i[1])
+                
+        
     def create_df_widgets(self):
 
         self.remove_all_widgets(self.column0Layout)
         self.remove_all_widgets(self.featurescolumnLayout)
 
         self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
+
+
 
         drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=dropnaWidget )
         self.featurescolumnLayout.addWidget(drop_nan_checkbox.cb)
@@ -172,6 +192,9 @@ class TwoColumnWindow(QWidget):
         self.featurescolumnLayout.addWidget(impute_checkbox.cb)
         impute_checkbox.cb.stateChanged.connect(lambda:impute_checkbox.visbility())
 
+        outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=outlierWidget )
+        self.featurescolumnLayout.addWidget(outlier_checkbox.cb)
+        outlier_checkbox.cb.stateChanged.connect(lambda:outlier_checkbox.visbility())
 
         # Create an empty QTableWidget
         self.empty_table = QTableWidget()
@@ -189,7 +212,7 @@ class TwoColumnWindow(QWidget):
 
         self.create_df_widgets()
         self.create_table()
-        self.create_list()
+        # self.create_list()
        
         
 
