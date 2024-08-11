@@ -1,4 +1,6 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 class Button(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -70,3 +72,23 @@ class popCheckBox(QWidget):
             self.widget.show()
         else:
             self.widget.hide()
+
+class impute_col(QWidget):
+    def __init__(self, column):
+        super().__init__()
+        self.column = column
+        self.initUI()
+
+    def initUI(self):
+            self.hbox = QHBoxLayout()
+            self.label = QLabel(self.column)
+            self.impute_checkbox = SQCheckBox("Impute")
+
+
+            self.hbox.addWidget(self.label)
+            self.strategy_combo = QComboBox()
+            self.strategy_combo.addItems(['mean', 'median', 'most_frequent', 'constant'])
+            self.strategy_combo.setEditable(True)
+            self.hbox.addWidget(self.strategy_combo)
+            self.hbox.addWidget(self.impute_checkbox)
+            self.hbox.setAlignment(Qt.AlignTop)

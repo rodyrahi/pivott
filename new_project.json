@@ -1,8 +1,15 @@
 {
-    "impute" : {
-        "col" : ["age"]
+    "data_path" : "test.csv",
+    "drop_duplicaes" : {
+        "col" : ["all"]
     },
-    "impute2" : {
-        "col" : ["age"]
+    "impute" : {
+        "col" : ["Age"],
+        "strategy" : ["mean"]
+
+    },
+    "outlier_cap" : {
+        "col" : ["age" , "fare"]
     }
+    
 }

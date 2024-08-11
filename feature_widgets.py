@@ -31,26 +31,29 @@ class imputeWidget(QWidget):
       
 
         for column in all_na_cols:
-            current_df = self.df
-            hbox = QHBoxLayout()
+            
+            # hbox = QHBoxLayout()
+            # label = QLabel(column)
+            # impute_checkbox = SQCheckBox("Impute")
 
-            hbox.addWidget(QLabel(column))
-    
-            strategy_combo = QComboBox()
-            strategy_combo.addItems(['mean', 'median', 'most_frequent', 'constant'])
-            strategy_combo.setEditable(True)
-            hbox.addWidget(strategy_combo)
+
+            # hbox.addWidget(label)
+            # strategy_combo = QComboBox()
+            # strategy_combo.addItems(['mean', 'median', 'most_frequent', 'constant'])
+            # strategy_combo.setEditable(True)
+            # hbox.addWidget(strategy_combo)
             
-            impute_checkbox = SQCheckBox("Impute")
-            
-            
-           
+
                 
+            # self.parent.impute_checkboxes.append()
+            # hbox.addWidget(impute_checkbox)
 
-            hbox.addWidget(impute_checkbox)
-            impute_checkbox.stateChanged.connect(lambda current_df=current_df,  checkbox= impute_checkbox,  col=column, combo=strategy_combo: self.impute_column( checkbox ,col, combo.currentText()))
-            hbox.setAlignment(Qt.AlignTop)
-            layout.addLayout(hbox)        
+            imputecol = impute_col(column)
+            self.parent.impute_checkboxes.append(imputecol)
+            impute_checkbox = imputecol.impute_checkbox 
+            impute_checkbox.stateChanged.connect(lambda   checkbox= impute_checkbox,  col=column, combo=imputecol.strategy_combo: self.impute_column( checkbox ,col, combo.currentText()))
+            
+            layout.addLayout(imputecol.hbox)        
 
         scroll_area.setWidget(scroll_widget)
         scroll_area.setWidgetResizable(True)

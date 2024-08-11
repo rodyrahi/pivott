@@ -115,6 +115,8 @@ class TwoColumnWindow(QWidget):
         self.imputewidget = None
         self.drop_nanwidget = None
 
+        self.impute_checkboxes = []
+
         self.initUI()
 
     def initUI(self):
@@ -171,13 +173,30 @@ class TwoColumnWindow(QWidget):
             jsonfile = json.load(file)
         
         for i in jsonfile.items():
-                print(i[1])
-                
+            if i[0] == 'impute':
+                list_col = list(i[1]["col"])
+                list_strategy = list(i[1]["strategy"])
+
+                for k in self.impute_checkboxes:
+                    
+                    print(k.label.text())
+
+                # imputewidget = self.impute_checkbox.widget
+                # print(list_col[0] , list_strategy[0])
+                # imputewidget.checked()
+                # imputewidget.impute_column(column=list_col[0] , strategy=list_strategy[0])
+
+            
+            
         
     def create_df_widgets(self):
 
         self.remove_all_widgets(self.column0Layout)
         self.remove_all_widgets(self.featurescolumnLayout)
+
+
+      
+        
 
         self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
 
@@ -187,10 +206,10 @@ class TwoColumnWindow(QWidget):
         self.featurescolumnLayout.addWidget(drop_nan_checkbox.cb)
         drop_nan_checkbox.cb.stateChanged.connect(lambda:drop_nan_checkbox.visbility())
 
-      
-        impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=imputeWidget )
-        self.featurescolumnLayout.addWidget(impute_checkbox.cb)
-        impute_checkbox.cb.stateChanged.connect(lambda:impute_checkbox.visbility())
+        
+        self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=imputeWidget )
+        self.featurescolumnLayout.addWidget(self.impute_checkbox.cb)
+        self.impute_checkbox.cb.stateChanged.connect(lambda:self.impute_checkbox.visbility())
 
         outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=outlierWidget )
         self.featurescolumnLayout.addWidget(outlier_checkbox.cb)
