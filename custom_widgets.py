@@ -74,9 +74,11 @@ class popCheckBox(QWidget):
             self.widget.hide()
 
 class impute_col(QWidget):
-    def __init__(self, column):
+    def __init__(self, column , top):
         super().__init__()
         self.column = column
+        self.impute_checkbox = None
+        self.top = top
         self.initUI()
 
     def initUI(self):
@@ -92,3 +94,8 @@ class impute_col(QWidget):
             self.hbox.addWidget(self.strategy_combo)
             self.hbox.addWidget(self.impute_checkbox)
             self.hbox.setAlignment(Qt.AlignTop)
+    
+    def checked(self):
+        self.impute_checkbox.stateChanged.disconnect()
+        self.impute_checkbox.setChecked(True)
+        self.impute_checkbox.stateChanged.connect(lambda checkbox= self.impute_checkbox,  col= self.column, combo= self.strategy_combo: self.top.impute_column(checkbox , col, combo.currentText()))

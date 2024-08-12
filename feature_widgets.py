@@ -48,10 +48,12 @@ class imputeWidget(QWidget):
             # self.parent.impute_checkboxes.append()
             # hbox.addWidget(impute_checkbox)
 
-            imputecol = impute_col(column)
+            imputecol = impute_col(column , self)
             self.parent.impute_checkboxes.append(imputecol)
-            impute_checkbox = imputecol.impute_checkbox 
-            impute_checkbox.stateChanged.connect(lambda   checkbox= impute_checkbox,  col=column, combo=imputecol.strategy_combo: self.impute_column( checkbox ,col, combo.currentText()))
+            impute_cb = imputecol.impute_checkbox
+            
+
+            impute_cb.stateChanged.connect(lambda  state ,   col=column, combo=imputecol.strategy_combo , checkbox= impute_cb: self.impute_column( state , checkbox ,col, combo.currentText()))
             
             layout.addLayout(imputecol.hbox)        
 
@@ -69,13 +71,10 @@ class imputeWidget(QWidget):
         self.setLayout(main_layout)
         
         
+ 
 
-
-    def impute_column(self  , checkbox ,column, strategy):
+    def impute_column(self , state , checkbox ,column, strategy):
         
-       
-        
-         
         if checkbox.isChecked():
             
             if strategy == 'constant':

@@ -179,12 +179,13 @@ class TwoColumnWindow(QWidget):
 
                 for k in self.impute_checkboxes:
                     
-                    print(k.label.text())
-
+                    if k.label.text() in list_col:
+                        
                 # imputewidget = self.impute_checkbox.widget
                 # print(list_col[0] , list_strategy[0])
-                # imputewidget.checked()
-                # imputewidget.impute_column(column=list_col[0] , strategy=list_strategy[0])
+                        k.checked()
+                        
+                        k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=list_col[0] , strategy=list_strategy[0])
 
             
             
