@@ -80,7 +80,7 @@ class imputeWidget(QWidget):
             jsonfile = json.load(file)
 
         try:
-            if not column in jsonfile["impute"]["col"]:
+            if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
                 
                 jsonfile["impute"]["col"].append(column)
                 jsonfile["impute"]["strategy"].append(strategy)
