@@ -1,5 +1,6 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+import json
 from custom_widgets import *
 from sklearn.impute import SimpleImputer
 import numpy as np
@@ -75,6 +76,33 @@ class imputeWidget(QWidget):
 
     def impute_column(self , state , checkbox ,column, strategy):
         
+        with open(self.parent.projectpath, 'r') as file:
+            jsonfile = json.load(file)
+
+        try:
+            jsonfile["impute"]["col"]=[]
+            jsonfile["impute"]["strategy"]=[]
+            jsonfile["impute"]["col"].append(column)
+            jsonfile["impute"]["strategy"].append(strategy)
+        except:
+        
+            jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
+
+
+        # elif not column in jsonfile["impute"]["col"]:
+        #     jsonfile["impute"]["col"].append(column)
+        #     jsonfile["impute"]["strategy"].append(strategy)
+
+        # if not jsonfile["impute"]["col"]:
+        #     jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
+        # else:
+
+        #     jsonfile["impute"]["col"].append(column)
+        #     jsonfile["impute"]["strategy"].append(strategy)
+
+        with open(self.parent.projectpath, 'w') as file:
+            json.dump(jsonfile, file ) 
+
         if checkbox.isChecked():
             
             if strategy == 'constant':

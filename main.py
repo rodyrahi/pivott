@@ -1,4 +1,5 @@
 import sys
+import os
 from PySide2 import QtWidgets
 import qdarkstyle
 from PyQt5.QtWidgets import *
@@ -94,6 +95,7 @@ class TwoColumnWindow(QWidget):
         super().__init__()
         self.df = None
         self.filepath = None
+        self.projectpath = None
 
         self.checked = []
         self.unchecked = []
@@ -130,6 +132,8 @@ class TwoColumnWindow(QWidget):
         
 
         new_project_button = Button('New Project')
+        new_project_button.clicked.connect(self.create_project)
+
         self.filecolumnLayout.addWidget(new_project_button)
 
 
@@ -167,12 +171,23 @@ class TwoColumnWindow(QWidget):
     #     self.column0Layout.removeWidget(dragableListWidget(self.df))
     #     self.column0Layout.addWidget(dragableListWidget(self.df))
 
+    def create_project(self):
+        save_location, _ = QFileDialog.getSaveFileName(self, "Save Project", "", "JSON Files (*.json)")
+        if save_location:
+            self.projectpath = save_location
+            project_name = os.path.splitext(os.path.basename(save_location))[0]
+            with open(save_location, 'w') as f:
+                json.dump({}, f)
+                        
+
     def open_project(self):
         project_path, _ = QFileDialog().getOpenFileName()
         
         with open(project_path, 'r') as file:
             jsonfile = json.load(file)
         
+
+        self.projectpath = project_path
         data_path = jsonfile["data_path"]
         self.df = dataframe(data_path)
 
@@ -233,6 +248,16 @@ class TwoColumnWindow(QWidget):
     def set_df(self):
         file_path, _ = QFileDialog().getOpenFileName()
         self.filepath = file_path
+        
+        with open(self.projectpath, 'r') as file:
+            jsonfile = json.load(file)
+
+        
+        jsonfile["data_path"] = file_path
+        with open(self.projectpath, 'w') as file:
+            json.dump(jsonfile, file, indent=4) 
+        
+
         self.df = dataframe(file_path)
 
         self.create_df_widgets()
