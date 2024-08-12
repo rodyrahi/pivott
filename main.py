@@ -169,8 +169,15 @@ class TwoColumnWindow(QWidget):
 
     def open_project(self):
         project_path, _ = QFileDialog().getOpenFileName()
+        
         with open(project_path, 'r') as file:
             jsonfile = json.load(file)
+        
+        data_path = jsonfile["data_path"]
+        self.df = dataframe(data_path)
+
+        self.create_df_widgets()
+        self.create_table()
         
         for i in jsonfile.items():
             if i[0] == 'impute':
