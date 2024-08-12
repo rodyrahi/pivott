@@ -98,4 +98,4 @@ class impute_col(QWidget):
     def checked(self):
         self.impute_checkbox.stateChanged.disconnect()
         self.impute_checkbox.setChecked(True)
-        self.impute_checkbox.stateChanged.connect(lambda checkbox= self.impute_checkbox,  col= self.column, strategy= self.strategy_combo: self.top.impute_column(checkbox , col, strategy.currentText()))
+        self.impute_checkbox.stateChanged.connect(lambda state=True , checkbox= self.impute_checkbox,  col= self.column, strategy= self.strategy_combo: self.top.impute_column(state,checkbox , col, strategy.currentText()))

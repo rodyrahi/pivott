@@ -1,15 +1,1 @@
-{
-    "data_path" : "test.csv",
-    "drop_duplicaes" : {
-        "col" : ["all"]
-    },
-    "impute" : {
-        "col" : ["Age" , "Cabin"],
-        "strategy" : ["mean" , "raj"]
-
-    },
-    "outlier_cap" : {
-        "col" : ["age" , "fare"]
-    }
-    
-}
+{"data_path": "test.csv", "drop_duplicaes": {"col": ["all"]}, "impute": {"col": ["Age", "Cabin"], "strategy": ["mean", "raj"]}, "outlier_cap": {"col": ["age", "fare"]}}
