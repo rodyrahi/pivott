@@ -4,8 +4,8 @@
         "col" : ["all"]
     },
     "impute" : {
-        "col" : ["Age"],
-        "strategy" : ["mean"]
+        "col" : ["Age" , "Cabin"],
+        "strategy" : ["mean" , "raj"]
 
     },
     "outlier_cap" : {
