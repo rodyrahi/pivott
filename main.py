@@ -138,7 +138,7 @@ class TwoColumnWindow(QWidget):
         self.filecolumnLayout.addWidget(new_project_button)
 
 
-        select_button = Button('Select File')
+        select_button = Button('Select Source')
         select_button.clicked.connect(self.set_df)
         self.filecolumnLayout.addWidget(select_button)
 

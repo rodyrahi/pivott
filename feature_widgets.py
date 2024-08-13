@@ -197,7 +197,7 @@ class dropnaWidget(QWidget):
                 # dropall = self.drop_all(" ")
                 if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
                     self.drop_all(" ")
-                    self.parent.df.dataframe[col] = self.df.dataframe[col]
+                    self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
 
 
