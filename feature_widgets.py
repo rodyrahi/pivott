@@ -136,9 +136,11 @@ class imputeWidget(QWidget):
 
             with open(self.parent.projectpath, 'r') as file:
                 jsonfile = json.load(file)
-                  
+                
+                index = jsonfile["impute"]["col"].index(column)
+
                 jsonfile["impute"]["col"].remove(column)
-                jsonfile["impute"]["strategy"].remove(strategy)
+                del jsonfile["impute"]["strategy"][index]
 
             with open(self.parent.projectpath, 'w') as file:
                 json.dump(jsonfile, file ) 
