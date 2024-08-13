@@ -1,1 +1,3 @@
-{"data_path": "D:/pivott/test.csv", "impute": {"col": [], "strategy": []}}
+{
+    "data_path": "D:/pivott/test.csv"
+}

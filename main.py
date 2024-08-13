@@ -5,6 +5,7 @@ import qdarkstyle
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+
 import json
 from dataframe_widget import *
 from feature_widgets import *
@@ -142,18 +143,24 @@ class TwoColumnWindow(QWidget):
         select_button.clicked.connect(self.set_df)
         self.filecolumnLayout.addWidget(select_button)
 
+        
 
-    
+        image = QLabel(pixmap=QPixmap('logo.png'))
+        self.column0Layout.addWidget(image)
+
+
+        
        
         
         self.column1Layout.setAlignment(Qt.AlignTop)
 
         
         # Add columns to the main layout
-        
-        self.mainLayout.addLayout(self.column0Layout)
         self.mainLayout.addLayout(self.column1Layout)
         self.mainLayout.addLayout(self.column2Layout)
+        self.mainLayout.addLayout(self.column0Layout)
+
+
         self.column1Layout.addLayout(self.filecolumnLayout)
         self.column1Layout.addLayout(self.featurescolumnLayout)
         
