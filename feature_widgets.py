@@ -4,6 +4,7 @@ import json
 from custom_widgets import *
 from sklearn.impute import SimpleImputer
 import numpy as np
+import pandas as pd
 
 
 def inArray(parent , column):
@@ -12,6 +13,20 @@ def inArray(parent , column):
             return l
          
     return None
+
+
+# class save_checkbox():
+#     def __init__(self , checkbox , column , func , feature):
+
+
+
+
+
+   
+
+
+    
+
 
 
 class imputeWidget(QWidget):
@@ -33,28 +48,13 @@ class imputeWidget(QWidget):
 
         for column in all_na_cols:
             
-            # hbox = QHBoxLayout()
-            # label = QLabel(column)
-            # impute_checkbox = SQCheckBox("Impute")
-
-
-            # hbox.addWidget(label)
-            # strategy_combo = QComboBox()
-            # strategy_combo.addItems(['mean', 'median', 'most_frequent', 'constant'])
-            # strategy_combo.setEditable(True)
-            # hbox.addWidget(strategy_combo)
-            
-
-                
-            # self.parent.impute_checkboxes.append()
-            # hbox.addWidget(impute_checkbox)
-
+          
             imputecol = impute_col(column , self)
             self.parent.impute_checkboxes.append(imputecol)
             impute_cb = imputecol.impute_checkbox
             
 
-            impute_cb.stateChanged.connect(lambda  state ,   col=column, combo=imputecol.strategy_combo , checkbox= impute_cb: self.impute_column( state , checkbox ,col, combo.currentText()))
+            impute_cb.stateChanged.connect(lambda  state ,   col=column, combo=imputecol.strategy_combo , checkbox= impute_cb: self.impute_column( state , column=col , checkbox=checkbox, strategy= combo.currentText()))
             
             layout.addLayout(imputecol.hbox)        
 
@@ -74,36 +74,30 @@ class imputeWidget(QWidget):
         
  
 
-    def impute_column(self , state , checkbox ,column, strategy):
+    def impute_column(self , state , checkbox , column, strategy):
         
-        with open(self.parent.projectpath, 'r') as file:
-            jsonfile = json.load(file)
-
-        try:
-            if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
-                
-                jsonfile["impute"]["col"].append(column)
-                jsonfile["impute"]["strategy"].append(strategy)
-        except:
+       
         
-            jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
-
-
-        # elif not column in jsonfile["impute"]["col"]:
-        #     jsonfile["impute"]["col"].append(column)
-        #     jsonfile["impute"]["strategy"].append(strategy)
-
-        # if not jsonfile["impute"]["col"]:
-        #     jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
-        # else:
-
-        #     jsonfile["impute"]["col"].append(column)
-        #     jsonfile["impute"]["strategy"].append(strategy)
-
-        with open(self.parent.projectpath, 'w') as file:
-            json.dump(jsonfile, file ) 
+        print(column , "impute is ran")
 
         if checkbox.isChecked():
+            
+            with open(self.parent.projectpath, 'r') as file:
+                jsonfile = json.load(file)
+
+            try:
+                if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
+                    
+                    jsonfile["impute"]["col"].append(column)
+                    jsonfile["impute"]["strategy"].append(strategy)
+            except:
+            
+                jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
+
+
+            with open(self.parent.projectpath, 'w') as file:
+                json.dump(jsonfile, file ) 
+
             
             if strategy == 'constant':
                 fill_value = 0  # You can modify this to allow user input
@@ -114,37 +108,49 @@ class imputeWidget(QWidget):
                 imputer = SimpleImputer(missing_values=np.nan, strategy='constant', fill_value=strategy)
             
             
-            
-            
-          
            
             
             if checkbox.save_unchecked(self.parent , self.df , column , 'impute'):
-
                 imputer.fit(self.df.dataframe[[column]])
-                self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
+                self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()      
 
                 self.parent.df.dataframe[column] = self.df.dataframe[column]
                 self.parent.create_table()
 
-                
+                        
 
-            column_found1 = checkbox.save_checked(self.parent , self.df , column , 'impute')
-            print(column_found1)
-            if column_found1:
-
-                self.df.dataframe[column] = column_found1[1][column]
-                self.parent.df.dataframe = self.df.dataframe
-                self.parent.create_table()
-               
+            # column_found1 = checkbox.save_checked(self.parent , self.df , column , 'impute')
+            # if column_found1:
+            #     print("3")
+            #     self.df.dataframe[column] = column_found1[1][column]
+            #     self.parent.df.dataframe = self.df.dataframe
+            #     self.parent.create_table()
             
         else: 
             col = inArray(self.parent.unchecked, column+'impute')
             if col:
-
+              
                 self.df.dataframe[column] = col[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
+
+            with open(self.parent.projectpath, 'r') as file:
+                jsonfile = json.load(file)
+                  
+                jsonfile["impute"]["col"].remove(column)
+                jsonfile["impute"]["strategy"].remove(strategy)
+
+            with open(self.parent.projectpath, 'w') as file:
+                json.dump(jsonfile, file ) 
+
+
+
+    def imputecol(self , imputer , column):
+        
+        imputer.fit(self.df.dataframe[[column]])
+        self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel()        
+
+        
                 
 
 class dropnaWidget(QWidget):
@@ -166,17 +172,11 @@ class dropnaWidget(QWidget):
         for column in allcolumns:
 
            
-            hbox = QHBoxLayout()
+            dropnacol = dropna_col(column , self)
 
-            hbox.addWidget(QLabel(column))
+            dropnacol.dropna_checkbox.stateChanged.connect(lambda state , checkbox=dropnacol.dropna_checkbox, col=column : self.drop_columnna( state, checkbox , col))
     
-    
-            impute_button = Button("Dropna Rows")
-            hbox.addWidget(impute_button)
-
-            impute_button.clicked.connect(lambda checked, col=column : self.drop_columnna(col))
-    
-            layout.addLayout(hbox)        
+            layout.addLayout(dropnacol.hbox)        
 
         scroll_area.setWidget(scroll_widget)
         scroll_area.setWidgetResizable(True)
@@ -190,14 +190,55 @@ class dropnaWidget(QWidget):
         
 
 
-    def drop_columnna(self ,col):
+    def drop_columnna(self , state , checkbox ,col):
 
-        if col == "All":
-            self.df.dataframe = self.df.dataframe.dropna()
+        if checkbox.isChecked():
+            if col == "All":
+                # dropall = self.drop_all(" ")
+                if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
+                    self.drop_all(" ")
+                    self.parent.df.dataframe[col] = self.df.dataframe[col]
+                    self.parent.create_table()
+
+
+                # save_checkbox(self , checkbox , col , dropall , 'dropna')
+            else:
+                if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
+                    self.drop_col(col)
+                    # difference = self.parent.df.dataframe != self.df.dataframe
+
+                    self.parent.df.dataframe = self.df.dataframe
+                    self.parent.create_table()
+
         else:
-            self.df.dataframe = self.df.dataframe.dropna(subset=[col])
-        self.parent.df = self.df
-        self.parent.create_table()
+            col = inArray(self.parent.unchecked, col+'dropna')
+            if col:
+
+                # Identify rows in col[1] that are not in self.df.dataframe based on the index
+                diff = col[1][~col[1].index.isin(self.df.dataframe.index )]
+                print(diff) 
+
+                # Concatenate the new rows to self.df.dataframe, ensuring indices are aligned
+                self.df.dataframe = pd.concat([self.df.dataframe, diff], ignore_index=True)
+
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+
+
+        # self.parent.df = self.df
+        # self.parent.create_table()
+
+    def drop_all(self , all):
+        self.df.dataframe = self.df.dataframe.dropna()
+    
+    def drop_col(self , col):
+        print("test")
+        self.df.dataframe = self.df.dataframe.dropna(subset=[col])
+
+
+
+
+
 
 
 class outlierWidget(QWidget):

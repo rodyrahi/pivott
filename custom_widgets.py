@@ -16,6 +16,7 @@ class SQCheckBox(QCheckBox):
         column_found = self.inArray(parent.unchecked, column)
         if column_found is None:
             parent.unchecked.append((column+method, df.dataframe.copy()))
+            print("unchecked added")
             return True
         return False
     
@@ -23,6 +24,7 @@ class SQCheckBox(QCheckBox):
         column_found = self.inArray(parent.checked, column)
         if column_found is None:
             parent.checked.append((column+method, df.dataframe.copy()))
+            print("checked added")
             return False
         return column_found
 
@@ -99,3 +101,27 @@ class impute_col(QWidget):
         self.impute_checkbox.stateChanged.disconnect()
         self.impute_checkbox.setChecked(True)
         self.impute_checkbox.stateChanged.connect(lambda state=True , checkbox= self.impute_checkbox,  col= self.column, strategy= self.strategy_combo: self.top.impute_column(state,checkbox , col, strategy.currentText()))
+
+
+class dropna_col(QWidget):
+    def __init__(self, column , top):
+        super().__init__()
+        self.column = column
+        self.dropna_checkbox = None
+        self.top = top
+        self.initUI()
+
+    def initUI(self):
+            self.hbox = QHBoxLayout()
+            self.label = QLabel(self.column)
+            self.dropna_checkbox = SQCheckBox("Dropna")
+
+
+            self.hbox.addWidget(self.label)
+            self.hbox.addWidget(self.dropna_checkbox)
+            self.hbox.setAlignment(Qt.AlignTop)
+    
+    def checked(self):
+        self.dropna_checkbox.stateChanged.disconnect()
+        self.dropna_checkbox.setChecked(True)
+        self.dropna_checkbox.stateChanged.connect(lambda state=True , checkbox= self.dropna_checkbox,  col= self.column: self.top.dropna_column(state,checkbox , col))

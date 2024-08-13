@@ -62,6 +62,7 @@ class tableWidget(QWidget):
             self.setLayout(layout)
             self.setWindowTitle('DataFrame Viewer')
 
+
         def show_unique_values(self, pos):
             logical_index = self.tableWidget.horizontalHeader().logicalIndexAt(pos)
             column_name = self.dataframe.columns[logical_index]
@@ -182,29 +183,29 @@ class TwoColumnWindow(QWidget):
 
     def open_project(self):
         project_path, _ = QFileDialog().getOpenFileName()
-        
-        with open(project_path, 'r') as file:
-            jsonfile = json.load(file)
+        if project_path:
+            with open(project_path, 'r') as file:
+                jsonfile = json.load(file)
         
 
-        self.projectpath = project_path
-        data_path = jsonfile["data_path"]
-        self.df = dataframe(data_path)
+            self.projectpath = project_path
+            data_path = jsonfile["data_path"]
+            self.df = dataframe(data_path)
 
-        self.create_df_widgets()
-        self.create_table()
-        
-        for i in jsonfile.items():
-            if i[0] == 'impute':
-                list_col = list(i[1]["col"])
-                list_strategy = list(i[1]["strategy"])
+            self.create_df_widgets()
+            self.create_table()
+            
+            for i in jsonfile.items():
+                if i[0] == 'impute':
+                    list_col = list(i[1]["col"])
+                    list_strategy = list(i[1]["strategy"])
 
-                for k in self.impute_checkboxes:
-                    
-                    for index,col in enumerate(list_col):
-                        if k.label.text() == col:
-                            k.checked()
-                            k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=col , strategy=list_strategy[index])
+                    for k in self.impute_checkboxes:
+                        
+                        for index,col in enumerate(list_col):
+                            if k.label.text() == col:
+                                k.checked()
+                                k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=col , strategy=list_strategy[index])
 
 
             
