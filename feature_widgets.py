@@ -22,12 +22,12 @@ class featureWidget(QWidget):
         self.setAcceptDrops(True)
         self.df = df
         self.parent = parent
-        self.feature_function = None
+        self.feature_label = QLabel("feature")
 
         self.initUI()
 
     def initUI(self):
-      
+        
         scroll_area = QScrollArea()
         scroll_widget = QWidget()
         scroll_widget.setAcceptDrops(True)
@@ -42,6 +42,9 @@ class featureWidget(QWidget):
 
         self.main_layout = QVBoxLayout(self)
         
+        
+        self.main_layout.addWidget(self.feature_label)
+
         self.main_layout.addWidget(scroll_area)
         scroll_area.setAcceptDrops(True)
         self.setMaximumSize(300, 300)

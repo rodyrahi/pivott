@@ -91,6 +91,7 @@ class TwoColumnWindow(QWidget):
         self.column1Layout = QVBoxLayout()
 
 
+
         self.filecolumnLayout = QVBoxLayout()
         self.featurescolumnLayout = QVBoxLayout()
 
@@ -112,41 +113,50 @@ class TwoColumnWindow(QWidget):
 
 
         
-        open_project = Button('Open Project')
+        open_project = MainButton('Open Project')
         open_project.clicked.connect(self.open_project)
         self.filecolumnLayout.addWidget(open_project)
         
 
-        new_project_button = Button('New Project')
+        new_project_button = MainButton('New Project')
         new_project_button.clicked.connect(self.create_project)
 
         self.filecolumnLayout.addWidget(new_project_button)
 
 
-        select_button = Button('Select Source')
+        select_button = MainButton('Select Source')
         select_button.clicked.connect(self.set_df)
         self.filecolumnLayout.addWidget(select_button)
 
         
 
         image = QLabel(pixmap=QPixmap('logo.png'))
-        self.column0Layout.addWidget(image)
+        self.column2Layout.addWidget(image)
 
-
+        self.column1Layout.setSpacing(20)   
         
-       
+        image.setFixedSize(700 , 700)
         
+        self.filecolumnLayout.setAlignment(Qt.AlignCenter)
+        self.column0Layout.setAlignment(Qt.AlignRight)
         self.column1Layout.setAlignment(Qt.AlignTop)
+        self.column2Layout.setAlignment(Qt.AlignLeft)
+
 
         
         # Add columns to the main layout
-        self.mainLayout.addLayout(self.column1Layout)
-        self.mainLayout.addLayout(self.column2Layout)
         self.mainLayout.addLayout(self.column0Layout)
 
+        self.mainLayout.addLayout(self.column1Layout)
 
-        self.column1Layout.addLayout(self.filecolumnLayout)
-        self.column1Layout.addLayout(self.featurescolumnLayout)
+        self.mainLayout.addLayout(self.column2Layout)
+        
+
+        
+        self.column0Layout.addLayout(self.filecolumnLayout)
+        self.column0Layout.addLayout(self.featurescolumnLayout)
+        self.featurescolumnLayout.setAlignment(Qt.AlignTop)
+
         
 
         # Set the main layout for the window
@@ -203,12 +213,14 @@ class TwoColumnWindow(QWidget):
         
     def create_df_widgets(self):
 
-        self.remove_all_widgets(self.column0Layout)
+        # self.remove_all_widgets(self.column0Layout)
         self.remove_all_widgets(self.featurescolumnLayout)
+        self.remove_all_widgets(self.filecolumnLayout)
 
 
-      
-        
+        select_button = Button('Select Source')
+        select_button.clicked.connect(self.set_df)
+        self.featurescolumnLayout.addWidget(select_button)
 
         self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
 
