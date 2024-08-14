@@ -147,8 +147,16 @@ class TwoColumnWindow(QWidget):
         # Add columns to the main layout
         self.mainLayout.addLayout(self.column0Layout)
 
-        self.mainLayout.addLayout(self.column1Layout)
-
+        self.scroll_area = QScrollArea()
+        self.scroll_widget = QWidget()
+        self.scroll_widget.setLayout(self.column1Layout)
+        self.scroll_area.setWidget(self.scroll_widget)
+        self.scroll_area.setWidgetResizable(True)
+        self.mainLayout.addWidget(self.scroll_area)
+        
+        self.scroll_area.setMaximumSize(350, 1000)
+        self.scroll_area.hide()
+        
         self.mainLayout.addLayout(self.column2Layout)
         
 
@@ -212,7 +220,7 @@ class TwoColumnWindow(QWidget):
             
         
     def create_df_widgets(self):
-
+        self.scroll_area.show()
         # self.remove_all_widgets(self.column0Layout)
         self.remove_all_widgets(self.featurescolumnLayout)
         self.remove_all_widgets(self.filecolumnLayout)

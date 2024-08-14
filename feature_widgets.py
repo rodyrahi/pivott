@@ -48,6 +48,7 @@ class featureWidget(QWidget):
         self.main_layout.addWidget(scroll_area)
         scroll_area.setAcceptDrops(True)
         self.setMaximumSize(300, 300)
+        self.setMinimumSize(300, 200)
         self.setAcceptDrops(True)
         
         self.setLayout(self.main_layout)

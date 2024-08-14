@@ -90,6 +90,7 @@ class feature(QWidget):
         
     def dropna_col(self):
         self.hbox = QHBoxLayout()
+        
         self.label = QLabel(self.column)
         self.checkbox = SQCheckBox("Dropna")
 
@@ -102,6 +103,7 @@ class feature(QWidget):
 
     def impute_col(self):
         self.hbox = QHBoxLayout()
+        self.hbox.setSpacing(5)
         self.label = QLabel(self.column)
         self.checkbox = SQCheckBox("Impute")
 
