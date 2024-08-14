@@ -196,23 +196,26 @@ class TwoColumnWindow(QWidget):
         
 
             self.projectpath = project_path
-            data_path = jsonfile["data_path"]
-            self.df = dataframe(data_path)
+            self.select_source(jsonfile)
 
-            self.create_df_widgets()
-            self.create_table()
+            # data_path = jsonfile["data_path"]
+            # self.df = dataframe(data_path)
+
+            # self.create_df_widgets()
+            # self.create_table()
             
-            for i in jsonfile.items():
-                if i[0] == 'impute':
-                    list_col = list(i[1]["col"])
-                    list_strategy = list(i[1]["strategy"])
+            # for i in jsonfile.items():
+            #     if i[0] == 'impute':
+            #         list_col = list(i[1]["col"])
+            #         list_strategy = list(i[1]["strategy"])
 
-                    for k in self.impute_checkboxes:
+            #         for k in self.impute_checkboxes:
                         
-                        for index,col in enumerate(list_col):
-                            if k.label.text() == col:
-                                k.checked()
-                                k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=col , strategy=list_strategy[index])
+            #             for index,col in enumerate(list_col):
+            #                 if k.label.text() == col:
+            #                     k.checked()
+            #                     k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=col , strategy=list_strategy[index])
+    
     def select_source(self , jsonfile):
         print(jsonfile)
         data_path = jsonfile["data_path"]
@@ -222,6 +225,7 @@ class TwoColumnWindow(QWidget):
         self.create_table()
         
         for i in jsonfile.items():
+
             if i[0] == 'impute':
                 list_col = list(i[1]["col"])
                 list_strategy = list(i[1]["strategy"])
@@ -231,7 +235,7 @@ class TwoColumnWindow(QWidget):
                     for index,col in enumerate(list_col):
                         if k.label.text() == col:
                             k.checked()
-                            k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=col , strategy=list_strategy[index])
+                            k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_strategy[index])
 
             
         
@@ -247,19 +251,32 @@ class TwoColumnWindow(QWidget):
         self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
 
 
-
-        drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=dropnaWidget )
+        dropwidget = featureWidget
+        drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=dropwidget  )
+        drop_nan_checkbox.widget.dropnaUI()
         self.featurescolumnLayout.addWidget(drop_nan_checkbox.cb)
         drop_nan_checkbox.cb.stateChanged.connect(lambda:drop_nan_checkbox.visbility())
 
         
-        self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=imputeWidget )
+        
+        imputewidget = featureWidget
+        self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=imputewidget)
+        self.impute_checkbox.widget.imputeUI()
         self.featurescolumnLayout.addWidget(self.impute_checkbox.cb)
         self.impute_checkbox.cb.stateChanged.connect(lambda:self.impute_checkbox.visbility())
 
-        outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=outlierWidget )
+
+
+        outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
         self.featurescolumnLayout.addWidget(outlier_checkbox.cb)
         outlier_checkbox.cb.stateChanged.connect(lambda:outlier_checkbox.visbility())
+
+        
+        encoding_checkbox = popCheckBox('Encoding Categorical' , parent=self , widget=featureWidget )
+        encoding_checkbox.widget.encodeUI()
+        self.featurescolumnLayout.addWidget(encoding_checkbox.cb)
+        encoding_checkbox.cb.stateChanged.connect(lambda:encoding_checkbox.visbility())
+
 
         # Create an empty QTableWidget
         self.empty_table = QTableWidget()

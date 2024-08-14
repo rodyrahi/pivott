@@ -1,1 +1,1 @@
-{"data_path": "D:/pivott/test.csv", "impute": {"col": ["Age"], "strategy": ["mean"]}}
+{"data_path": "D:/pivott/test.csv", "impute": {"col": [], "strategy": []}}

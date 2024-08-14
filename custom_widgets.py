@@ -37,8 +37,6 @@ class SQCheckBox(QCheckBox):
         return None
 
 
-        
-
 
 class popCheckBox(QWidget):
     def __init__(self, text , parent , widget ):
@@ -75,53 +73,66 @@ class popCheckBox(QWidget):
         else:
             self.widget.hide()
 
-class impute_col(QWidget):
-    def __init__(self, column , top):
+
+class feature(QWidget):
+    def __init__(self, column , top , func):
         super().__init__()
         self.column = column
-        self.impute_checkbox = None
-        self.top = top
-        self.initUI()
+        self.func = func
+        self.connect_func = None
+        
+        
+    def dropna_col(self):
+        self.hbox = QHBoxLayout()
+        self.label = QLabel(self.column)
+        self.checkbox = SQCheckBox("Dropna")
 
-    def initUI(self):
-            self.hbox = QHBoxLayout()
-            self.label = QLabel(self.column)
-            self.impute_checkbox = SQCheckBox("Impute")
+
+        self.hbox.addWidget(self.label)
+        self.hbox.addWidget(self.checkbox)
+        self.hbox.setAlignment(Qt.AlignTop)
+        self.connect_func = self.dropna_connect
 
 
-            self.hbox.addWidget(self.label)
-            self.strategy_combo = QComboBox()
-            self.strategy_combo.addItems(['mean', 'median', 'most_frequent', 'constant'])
-            self.strategy_combo.setEditable(True)
-            self.hbox.addWidget(self.strategy_combo)
-            self.hbox.addWidget(self.impute_checkbox)
-            self.hbox.setAlignment(Qt.AlignTop)
+    def impute_col(self):
+        self.hbox = QHBoxLayout()
+        self.label = QLabel(self.column)
+        self.checkbox = SQCheckBox("Impute")
+
+
+        self.hbox.addWidget(self.label)
+        self.strategy_combo = QComboBox()
+        self.strategy_combo.addItems(['mean', 'median', 'most_frequent', 'constant'])
+        self.strategy_combo.setEditable(True)
+        self.hbox.addWidget(self.strategy_combo)
+        self.hbox.addWidget(self.checkbox)
+        self.hbox.setAlignment(Qt.AlignTop)
+
+        self.connect_func = self.impute_connect
     
+    def encode_col(self):
+        self.hbox = QHBoxLayout()
+        self.label = QLabel(self.column)
+        self.checkbox = SQCheckBox("Dropna")
+
+
+        self.hbox.addWidget(self.label)
+        self.hbox.addWidget(self.checkbox)
+        self.hbox.setAlignment(Qt.AlignTop)
+        self.connect_func = self.encode_connect
+
+
     def checked(self):
-        self.impute_checkbox.stateChanged.disconnect()
-        self.impute_checkbox.setChecked(True)
-        self.impute_checkbox.stateChanged.connect(lambda state=True , checkbox= self.impute_checkbox,  col= self.column, strategy= self.strategy_combo: self.top.impute_column(state,checkbox , col, strategy.currentText()))
-
-
-class dropna_col(QWidget):
-    def __init__(self, column , top):
-        super().__init__()
-        self.column = column
-        self.dropna_checkbox = None
-        self.top = top
-        self.initUI()
-
-    def initUI(self):
-            self.hbox = QHBoxLayout()
-            self.label = QLabel(self.column)
-            self.dropna_checkbox = SQCheckBox("Dropna")
-
-
-            self.hbox.addWidget(self.label)
-            self.hbox.addWidget(self.dropna_checkbox)
-            self.hbox.setAlignment(Qt.AlignTop)
+        self.checkbox.stateChanged.disconnect()
+        self.checkbox.setChecked(True)
+        self.connect_func()
     
-    def checked(self):
-        self.dropna_checkbox.stateChanged.disconnect()
-        self.dropna_checkbox.setChecked(True)
-        self.dropna_checkbox.stateChanged.connect(lambda state=True , checkbox= self.dropna_checkbox,  col= self.column: self.top.dropna_column(state,checkbox , col))
+    def dropna_connect(self):
+        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
+
+    def impute_connect(self):
+        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column, strategy= self.strategy_combo: self.func(state,checkbox , col, strategy.currentText()))
+           
+    def encode_connect(self):
+        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
+    
