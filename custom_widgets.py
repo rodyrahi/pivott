@@ -113,7 +113,7 @@ class feature(QWidget):
     def encode_col(self):
         self.hbox = QHBoxLayout()
         self.label = QLabel(self.column)
-        self.checkbox = SQCheckBox("Dropna")
+        self.checkbox = SQCheckBox("Encode")
 
 
         self.hbox.addWidget(self.label)

@@ -16,22 +16,6 @@ from custom_widgets import *
 
 
 
-# class dragableListWidget(QListWidget):
-#     def __init__(self , df):
-#         super().__init__()
-#         self.setAcceptDrops(True)
-#         self.df = df
-#         self.initUI()
-        
-
-#     def initUI(self):
-#         self.setStyleSheet("max-width: 150px;")
-#         for column in self.df.dataframe.columns:
-#             item = QListWidgetItem(column)
-            
-#             self.setDragDropMode(QAbstractItemView.InternalMove)
-            
-#             self.addItem(item)
 
 class tableWidget(QWidget):
         def __init__(self, dataframe):
@@ -173,11 +157,6 @@ class TwoColumnWindow(QWidget):
         self.setGeometry(300, 100, 1000, 600)
     
  
-    # def create_list(self):
-    #     if self.df is None:
-    #         return None
-    #     self.column0Layout.removeWidget(dragableListWidget(self.df))
-    #     self.column0Layout.addWidget(dragableListWidget(self.df))
 
     def create_project(self):
         save_location, _ = QFileDialog.getSaveFileName(self, "Save Project", "", "JSON Files (*.json)")
@@ -198,24 +177,7 @@ class TwoColumnWindow(QWidget):
             self.projectpath = project_path
             self.select_source(jsonfile)
 
-            # data_path = jsonfile["data_path"]
-            # self.df = dataframe(data_path)
 
-            # self.create_df_widgets()
-            # self.create_table()
-            
-            # for i in jsonfile.items():
-            #     if i[0] == 'impute':
-            #         list_col = list(i[1]["col"])
-            #         list_strategy = list(i[1]["strategy"])
-
-            #         for k in self.impute_checkboxes:
-                        
-            #             for index,col in enumerate(list_col):
-            #                 if k.label.text() == col:
-            #                     k.checked()
-            #                     k.top.impute_column( state = True, checkbox=k.impute_checkbox , column=col , strategy=list_strategy[index])
-    
     def select_source(self , jsonfile):
         print(jsonfile)
         data_path = jsonfile["data_path"]

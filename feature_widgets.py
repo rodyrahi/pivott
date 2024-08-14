@@ -76,7 +76,7 @@ class featureWidget(QWidget):
             self.scroll_layout.addLayout(dropnacol.hbox)
 
     def encodeUI(self):
-        allcolumns = self.df.dataframe.columns.tolist()
+        allcolumns = self.df.dataframe.columns
         for column in allcolumns:
             encodecol = feature(column , self , self.encode_column)
             encodecol.encode_col()
@@ -198,33 +198,30 @@ class featureWidget(QWidget):
         print("test")
         self.df.dataframe = self.df.dataframe.dropna(subset=[col])
 
-    def encode_column(self , state , checkbox ,col):
+    def encode_column(self , state , checkbox ,column):
 
         if checkbox.isChecked():
-                
-                if checkbox.save_unchecked(self.parent , self.df , col , 'encode'):
-                    self.encode_col(col)
+                print(column , "encode is ran")
+                if checkbox.save_unchecked(self.parent , self.df , column , 'encode'):
+                    self.encode_col(column)
 
-                    self.parent.df.dataframe = self.df.dataframe
+                    self.parent.df.dataframe[column] = self.df.dataframe[column]
                     self.parent.create_table()
 
         else:
-            col = inArray(self.parent.unchecked, col+'encode')
+            col = inArray(self.parent.unchecked, column+'encode')
             if col:
-
-                self.df.dataframe[col] = col[1][col]
+                
+                self.df.dataframe[column] = col[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
 
 
 
-        # self.parent.df = self.df
-        # self.parent.create_table()
-
-
     
     def encode_col(self , col):
-        print("test")
         le = LabelEncoder()
-        self.df.dataframe = le.fit_transform(self.df.dataframe[col])
+        
+        self.df.dataframe[col] = le.fit_transform(self.df.dataframe[col])
+        print(self.df.dataframe[col])
 
