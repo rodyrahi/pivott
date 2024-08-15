@@ -79,6 +79,7 @@ class tableWidget(QWidget):
 class TwoColumnWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon('icon.png'))
         self.df = None
         self.filepath = None
         self.projectpath = None
@@ -139,7 +140,7 @@ class TwoColumnWindow(QWidget):
 
         self.column1Layout.setSpacing(20)   
         
-        image.setFixedSize(1000 , 1000)
+        image.setFixedSize(500 , 500)
         
         self.filecolumnLayout.setAlignment(Qt.AlignCenter)
         self.column0Layout.setAlignment(Qt.AlignRight)
