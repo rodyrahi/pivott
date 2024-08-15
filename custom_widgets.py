@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
+
 class MainButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -144,3 +145,5 @@ class feature(QWidget):
     def encode_connect(self):
         self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
     
+
+

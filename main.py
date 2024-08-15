@@ -105,6 +105,8 @@ class TwoColumnWindow(QWidget):
         self.drop_nanwidget = None
 
         self.impute_checkboxes = []
+        self.encode_checkboxes = []
+        self.dropna_checkboxes = []
 
         self.initUI()
 
@@ -182,7 +184,7 @@ class TwoColumnWindow(QWidget):
             self.projectpath = save_location
             project_name = os.path.splitext(os.path.basename(save_location))[0]
             with open(save_location, 'w') as f:
-                json.dump({}, f)
+                json.dump({"data_path":"" , "impute": {"col": [], "strategy": []}, "encode": {"col": []}, "dropna": {"col": []}}, f)
                         
 
     def open_project(self):
@@ -216,6 +218,24 @@ class TwoColumnWindow(QWidget):
                         if k.label.text() == col:
                             k.checked()
                             k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_strategy[index])
+            
+            if i[0] == 'encode':
+                list_col = list(i[1]["col"])
+
+                for k in self.encode_checkboxes:
+                    for col in list_col:
+                        if k.label.text() ==col:
+                            k.checked()
+                            k.func( state = True, checkbox=k.checkbox , column=col)
+
+            if i[0] == 'dropna':
+                list_col = list(i[1]["col"])
+
+                for k in self.dropna_checkboxes:
+                    for col in list_col:
+                        if k.label.text() ==col:
+                            k.checked()
+                            k.func( state = True, checkbox=k.checkbox , column=col)
 
             
         
@@ -232,17 +252,18 @@ class TwoColumnWindow(QWidget):
 
         self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
 
+        
 
-        dropwidget = featureWidget
-        drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=dropwidget  )
+
+        drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=featureWidget  )
         drop_nan_checkbox.widget.dropnaUI()
         self.featurescolumnLayout.addWidget(drop_nan_checkbox.cb)
         drop_nan_checkbox.cb.stateChanged.connect(lambda:drop_nan_checkbox.visbility())
 
         
         
-        imputewidget = featureWidget
-        self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=imputewidget)
+       
+        self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=featureWidget)
         self.impute_checkbox.widget.imputeUI()
         self.featurescolumnLayout.addWidget(self.impute_checkbox.cb)
         self.impute_checkbox.cb.stateChanged.connect(lambda:self.impute_checkbox.visbility())
@@ -250,6 +271,7 @@ class TwoColumnWindow(QWidget):
 
 
         outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
+        # outlier_checkbox.widget.outlierUI()
         self.featurescolumnLayout.addWidget(outlier_checkbox.cb)
         outlier_checkbox.cb.stateChanged.connect(lambda:outlier_checkbox.visbility())
 
@@ -271,26 +293,27 @@ class TwoColumnWindow(QWidget):
 
     def set_df(self):
         file_path, _ = QFileDialog().getOpenFileName()
-        self.filepath = file_path
-        
-        with open(self.projectpath, 'r') as file:
-            jsonfile = json.load(file)
+        if file_path:
+            self.filepath = file_path
+            
+            with open(self.projectpath, 'r') as file:
+                jsonfile = json.load(file)
 
-        
-        jsonfile["data_path"] = file_path
-        with open(self.projectpath, 'w') as file:
-            json.dump(jsonfile, file, indent=4) 
-        
-        
-        if not jsonfile["data_path"] == "":
-            self.select_source(jsonfile)
-        else:
-            self.df = dataframe(file_path)
+            
+            jsonfile["data_path"] = file_path
+            with open(self.projectpath, 'w') as file:
+                json.dump(jsonfile, file, indent=4) 
+            
+            
+            if not jsonfile["data_path"] == "":
+                self.select_source(jsonfile)
+            else:
+                self.df = dataframe(file_path)
 
-            self.create_df_widgets()
-            self.create_table()
-      
-       
+                self.create_df_widgets()
+                self.create_table()
+        
+        
         
 
     

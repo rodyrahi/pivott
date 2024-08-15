@@ -23,7 +23,7 @@ class featureWidget(QWidget):
         self.df = df
         self.parent = parent
         self.feature_label = QLabel("feature")
-
+        
         self.initUI()
 
     def initUI(self):
@@ -52,6 +52,16 @@ class featureWidget(QWidget):
         self.setAcceptDrops(True)
         
         self.setLayout(self.main_layout)
+
+    def read_json(self):
+        with open(self.parent.projectpath, 'r') as file:
+            return json.load(file)
+
+    def Write_json(self , jsonfile):
+
+        with open(self.parent.projectpath, 'w') as file:
+                return json.dump(jsonfile, file ) 
+          
         
     def imputeUI(self):
         
@@ -74,7 +84,8 @@ class featureWidget(QWidget):
         for column in allcolumns:
             dropnacol = feature(column , self , self.drop_columnna )
             dropnacol.dropna_col()
-           
+            self.parent.dropna_checkboxes.append(dropnacol)
+
 
             dropnacol.checkbox.stateChanged.connect(lambda state , checkbox=dropnacol.checkbox, col=column : self.drop_columnna( state, checkbox , col))
             self.scroll_layout.addLayout(dropnacol.hbox)
@@ -84,31 +95,29 @@ class featureWidget(QWidget):
         for column in allcolumns:
             encodecol = feature(column , self , self.encode_column)
             encodecol.encode_col()
+            self.parent.encode_checkboxes.append(encodecol)
+
             encodecol.checkbox.stateChanged.connect(lambda state , checkbox=encodecol.checkbox, col=column : self.encode_column( state, checkbox , col))
             self.scroll_layout.addLayout(encodecol.hbox)
 
 
     def impute_column(self , state , checkbox , column, strategy):
         
-        print(column , "impute is ran")
-
         if checkbox.isChecked():
             
-            with open(self.parent.projectpath, 'r') as file:
-                jsonfile = json.load(file)
+            jsonfile = self.read_json()
 
-            try:
-                if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
+            # try:
+            #     if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
                     
-                    jsonfile["impute"]["col"].append(column)
-                    jsonfile["impute"]["strategy"].append(strategy)
-            except:
+            #         jsonfile["impute"]["col"].append(column)
+            #         jsonfile["impute"]["strategy"].append(strategy)
+            # except:
             
-                jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
+            jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
 
 
-            with open(self.parent.projectpath, 'w') as file:
-                json.dump(jsonfile, file ) 
+            self.Write_json(jsonfile)
 
             
             if strategy == 'constant':
@@ -140,16 +149,15 @@ class featureWidget(QWidget):
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
 
-            with open(self.parent.projectpath, 'r') as file:
-                jsonfile = json.load(file)
+                jsonfile = self.read_json()
+
                 
                 index = jsonfile["impute"]["col"].index(column)
 
                 jsonfile["impute"]["col"].remove(column)
                 del jsonfile["impute"]["strategy"][index]
 
-            with open(self.parent.projectpath, 'w') as file:
-                json.dump(jsonfile, file ) 
+                self.Write_json(jsonfile)
 
     def imputecol(self , imputer , column):
         
@@ -157,43 +165,52 @@ class featureWidget(QWidget):
         self.df.dataframe[column] = imputer.transform(self.df.dataframe[[column]]).ravel() 
 
 
-    def drop_columnna(self , state , checkbox ,col):
+    def drop_columnna(self , state , checkbox ,column):
 
         if checkbox.isChecked():
-            if col == "All":
-                # dropall = self.drop_all(" ")
+
+            jsonfile = self.read_json()
+            # try:
+            #     if not column in jsonfile["dropna"]["col"]:
+            #         jsonfile["dropna"]["col"].append(column)
+            # except:
+            
+            jsonfile["dropna"] = {"col":[column]}
+
+            self.Write_json(jsonfile)    
+
+            if column == "All":
+
+
                 if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
                     self.drop_all(" ")
                     self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
 
-
-                # save_checkbox(self , checkbox , col , dropall , 'dropna')
             else:
-                if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
-                    self.drop_col(col)
-                    # difference = self.parent.df.dataframe != self.df.dataframe
+                if checkbox.save_unchecked(self.parent , self.df , column , 'dropna'):
+                    self.drop_col(column)
 
                     self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
 
         else:
-            col = inArray(self.parent.unchecked, col+'dropna')
+            col = inArray(self.parent.unchecked, column+'dropna')
             if col:
 
-                # Identify rows in col[1] that are not in self.df.dataframe based on the index
                 diff = col[1][~col[1].index.isin(self.df.dataframe.index )]
                 print(diff) 
-
-                # Concatenate the new rows to self.df.dataframe, ensuring indices are aligned
                 self.df.dataframe = pd.concat([self.df.dataframe, diff], ignore_index=True)
 
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
+            
+                jsonfile = self.read_json()
+                jsonfile["dropna"]["col"].remove(column)
+                self.Write_json(jsonfile)
 
 
-        # self.parent.df = self.df
-        # self.parent.create_table()
+
 
     def drop_all(self , all):
         self.df.dataframe = self.df.dataframe.dropna()
@@ -205,7 +222,23 @@ class featureWidget(QWidget):
     def encode_column(self , state , checkbox ,column):
 
         if checkbox.isChecked():
-                print(column , "encode is ran")
+                
+                jsonfile = self.read_json()
+                # try:
+                #     if not column in jsonfile["enocde"]["col"]:
+                #         jsonfile["encode"]["col"].append(column)
+                # except:
+                
+                jsonfile["encode"] = {"col":[column]}
+
+
+                self.Write_json(jsonfile)
+
+
+
+
+
+
                 if checkbox.save_unchecked(self.parent , self.df , column , 'encode'):
                     self.encode_col(column)
 
@@ -221,11 +254,15 @@ class featureWidget(QWidget):
                 self.parent.create_table()
 
 
+                jsonfile = self.read_json()
+                jsonfile["encode"]["col"].remove(column)
+                self.Write_json(jsonfile)
+
+
 
     
     def encode_col(self , col):
         le = LabelEncoder()
         
         self.df.dataframe[col] = le.fit_transform(self.df.dataframe[col])
-        print(self.df.dataframe[col])
 
