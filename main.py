@@ -139,7 +139,7 @@ class TwoColumnWindow(QWidget):
 
         self.column1Layout.setSpacing(20)   
         
-        image.setFixedSize(700 , 700)
+        image.setFixedSize(1000 , 1000)
         
         self.filecolumnLayout.setAlignment(Qt.AlignCenter)
         self.column0Layout.setAlignment(Qt.AlignRight)
