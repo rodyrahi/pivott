@@ -100,6 +100,18 @@ class feature(QWidget):
         self.hbox.addWidget(self.checkbox)
         self.hbox.setAlignment(Qt.AlignTop)
         self.connect_func = self.dropna_connect
+    
+    def drop_col(self):
+        self.hbox = QHBoxLayout()
+        
+        self.label = QLabel(self.column)
+        self.checkbox = SQCheckBox("Drop Column")
+
+
+        self.hbox.addWidget(self.label)
+        self.hbox.addWidget(self.checkbox)
+        self.hbox.setAlignment(Qt.AlignTop)
+        self.connect_func = self.dropna_connect
 
 
     def impute_col(self):

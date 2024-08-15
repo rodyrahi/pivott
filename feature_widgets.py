@@ -99,7 +99,17 @@ class featureWidget(QWidget):
 
             encodecol.checkbox.stateChanged.connect(lambda state , checkbox=encodecol.checkbox, col=column : self.encode_column( state, checkbox , col))
             self.scroll_layout.addLayout(encodecol.hbox)
+    
+    def dropcolUI(self):
+        allcolumns = self.df.dataframe.columns
+        for column in allcolumns:
 
+            dropcol = feature(column , self , self.drop_column)
+            dropcol.drop_col()
+            self.parent.encode_checkboxes.append(dropcol)
+
+            dropcol.checkbox.stateChanged.connect(lambda state , checkbox=dropcol.checkbox, col=column : self.drop_column( state, checkbox , col))
+            self.scroll_layout.addLayout(dropcol.hbox)
 
     def impute_column(self , state , checkbox , column, strategy):
         
@@ -266,3 +276,30 @@ class featureWidget(QWidget):
         
         self.df.dataframe[col] = le.fit_transform(self.df.dataframe[col])
 
+    def drop_column(self , state , checkbox ,column):
+        if checkbox.isChecked():
+
+            jsonfile = self.read_json()
+            jsonfile["dropcol"] = {"col":[column]}
+            self.Write_json(jsonfile)
+
+
+            if checkbox.save_unchecked(self.parent , self.df , column , 'dropcol'):
+                self.drop_col(column)
+
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+        else:
+            col = inArray(self.parent.unchecked, column+'dropcol')
+            if col:
+
+                self.df.dataframe[column] = col[1][column]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+
+
+                jsonfile = self.read_json()
+                jsonfile["dropcol"]["col"].remove(column)
+                self.Write_json(jsonfile)
+    def drop_col(self , col):
+        self.df.dataframe = self.df.dataframe.drop(col, axis=1)

@@ -1,1 +1,1 @@
-{"data_path": "D:/pivott/test.csv", "impute": {"col": [], "strategy": []}, "encode": {"col": ["Sex"]}, "dropna": {"col": []}}
+{"data_path": "D:/pivott/test.csv", "impute": {"col": [], "strategy": []}, "encode": {"col": []}, "dropna": {"col": []}, "dropcol": {"col": []}}

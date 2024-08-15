@@ -188,7 +188,7 @@ class TwoColumnWindow(QWidget):
                         
 
     def open_project(self):
-        project_path, _ = QFileDialog().getOpenFileName()
+        project_path, _ = QFileDialog().getOpenFileName(self, "Open Project", "", "JSON Files (*.json)")
         if project_path:
             with open(project_path, 'r') as file:
                 jsonfile = json.load(file)
@@ -280,6 +280,11 @@ class TwoColumnWindow(QWidget):
         encoding_checkbox.widget.encodeUI()
         self.featurescolumnLayout.addWidget(encoding_checkbox.cb)
         encoding_checkbox.cb.stateChanged.connect(lambda:encoding_checkbox.visbility())
+
+        dropcol_checkbox = popCheckBox('Drop Columns' , parent=self , widget=featureWidget )
+        dropcol_checkbox.widget.dropcolUI()
+        self.featurescolumnLayout.addWidget(dropcol_checkbox.cb)
+        dropcol_checkbox.cb.stateChanged.connect(lambda:dropcol_checkbox.visbility())
 
 
         # Create an empty QTableWidget
