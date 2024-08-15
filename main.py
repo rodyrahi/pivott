@@ -354,9 +354,17 @@ class TwoColumnWindow(QWidget):
         self.remove_all_widgets(self.column2Layout)
 
         self.df_widget = tableWidget(self.df.dataframe)
-        self.column2Layout.addWidget(self.df_widget)
-    
+        export_button = Button('Export to CSV')
 
+        self.column2Layout.addWidget(self.df_widget)
+        self.column2Layout.addWidget(export_button)
+        export_button.clicked.connect(self.export_to_csv)
+    
+    def export_to_csv(self):
+        file_path, _ = QFileDialog().getSaveFileName()
+        print(file_path)
+        if file_path:
+            self.df.dataframe.to_csv(file_path + ".csv", index=False)
     def remove_all_widgets(self , layout):
         while layout.count():
             child = layout.takeAt(0)

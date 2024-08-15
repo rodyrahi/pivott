@@ -349,6 +349,8 @@ class featureWidget(QWidget):
                 del jsonfile["outlier"]["method"][index]
 
                 self.Write_json(jsonfile)
+
+                
     def outlier_IQR(self , col):
         q1 = self.df.dataframe[col].quantile(0.25)
         q3 = self.df.dataframe[col].quantile(0.75)
