@@ -47,8 +47,8 @@ class featureWidget(QWidget):
 
         self.main_layout.addWidget(scroll_area)
         scroll_area.setAcceptDrops(True)
-        self.setMaximumSize(300, 300)
-        self.setMinimumSize(300, 200)
+        self.setMaximumSize(350, 300)
+        self.setMinimumSize(350, 200)
         self.setAcceptDrops(True)
         
         self.setLayout(self.main_layout)
@@ -106,10 +106,22 @@ class featureWidget(QWidget):
 
             dropcol = feature(column , self , self.drop_column)
             dropcol.drop_col()
-            self.parent.encode_checkboxes.append(dropcol)
+            self.parent.dropcol_checkboxes.append(dropcol)
 
             dropcol.checkbox.stateChanged.connect(lambda state , checkbox=dropcol.checkbox, col=column : self.drop_column( state, checkbox , col))
             self.scroll_layout.addLayout(dropcol.hbox)
+
+    def outlierUI(self):
+        allcolumns = self.df.dataframe.columns
+        for column in allcolumns:
+
+            outliercol = feature(column , self , self.drop_column)
+            outliercol.outlier_col()
+            self.parent.outlier_checkboxes.append(outliercol)
+
+            outliercol.checkbox.stateChanged.connect(lambda state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column : self.outlier_column( state, checkbox ,list.currentText() , col))
+            self.scroll_layout.addLayout(outliercol.hbox)
+
 
     def impute_column(self , state , checkbox , column, strategy):
         
@@ -303,3 +315,45 @@ class featureWidget(QWidget):
                 self.Write_json(jsonfile)
     def drop_col(self , col):
         self.df.dataframe = self.df.dataframe.drop(col, axis=1)
+
+    def outlier_column(self , state , checkbox ,list ,column):
+
+        if checkbox.isChecked():
+
+            jsonfile = self.read_json()
+            jsonfile["outlier"] = {"col":[column], "method":[list]}
+            self.Write_json(jsonfile)
+
+            if list == "IQR":
+                if checkbox.save_unchecked(self.parent , self.df , column , 'outlier'):
+ 
+                    self.outlier_IQR(column)
+
+                    self.parent.df.dataframe = self.df.dataframe
+                    self.parent.create_table()
+            
+        else:
+            col = inArray(self.parent.unchecked, column+'outlier')
+            if col:
+
+                self.df.dataframe[column] = col[1][column]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+
+
+                jsonfile = self.read_json()
+                
+                index = jsonfile["outlier"]["col"].index(column)
+
+                jsonfile["outlier"]["col"].remove(column)
+                del jsonfile["outlier"]["method"][index]
+
+                self.Write_json(jsonfile)
+    def outlier_IQR(self , col):
+        q1 = self.df.dataframe[col].quantile(0.25)
+        q3 = self.df.dataframe[col].quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - (1.5 * iqr)
+        upper_bound = q3 + (1.5 * iqr)
+        outliers = self.df.dataframe[(self.df.dataframe[col] < lower_bound) | (self.df.dataframe[col] > upper_bound)]
+        self.df.dataframe = self.df.dataframe.drop(outliers.index)

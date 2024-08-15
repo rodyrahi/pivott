@@ -142,6 +142,20 @@ class feature(QWidget):
         self.hbox.setAlignment(Qt.AlignTop)
         self.connect_func = self.encode_connect
 
+    def outlier_col(self):
+        self.hbox = QHBoxLayout()
+        self.label = QLabel(self.column)
+
+        self.checkbox = SQCheckBox("Remove Outlier")
+        self.method = QComboBox()
+        self.method.addItems(['Z-Score', 'IQR'])
+
+        
+        self.hbox.addWidget(self.label)
+        self.hbox.addWidget(self.method)
+        self.hbox.addWidget(self.checkbox)
+        self.hbox.setAlignment(Qt.AlignTop)
+        self.connect_func = self.outlier_connect
 
     def checked(self):
         self.checkbox.stateChanged.disconnect()
@@ -157,5 +171,7 @@ class feature(QWidget):
     def encode_connect(self):
         self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
     
-
+    def outlier_connect(self):
+        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column, strategy= self.method: self.func(state,checkbox, strategy.currentText() , col))
+     
 

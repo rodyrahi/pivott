@@ -107,6 +107,8 @@ class TwoColumnWindow(QWidget):
         self.impute_checkboxes = []
         self.encode_checkboxes = []
         self.dropna_checkboxes = []
+        self.dropcol_checkboxes = []
+        self.outlier_checkboxes = []
 
         self.initUI()
 
@@ -156,7 +158,7 @@ class TwoColumnWindow(QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.mainLayout.addWidget(self.scroll_area)
         
-        self.scroll_area.setMaximumSize(350, 1000)
+        self.scroll_area.setMaximumSize(370, 1000)
         self.scroll_area.hide()
         
         self.mainLayout.addLayout(self.column2Layout)
@@ -236,6 +238,28 @@ class TwoColumnWindow(QWidget):
                         if k.label.text() ==col:
                             k.checked()
                             k.func( state = True, checkbox=k.checkbox , column=col)
+            
+            if i[0] == 'dropcol':
+                list_col = list(i[1]["col"])
+
+                for k in self.dropcol_checkboxes:
+                    for col in list_col:
+                        if k.label.text() ==col:
+                            k.checked()
+                            k.func( state = True, checkbox=k.checkbox , column=col)
+            if i[0] == 'outlier':
+                
+                    list_col = list(i[1]["col"])
+                    list_method = list(i[1]["method"])
+
+                    for k in self.impute_checkboxes:
+                        
+                        for index,col in enumerate(list_col):
+                            if k.label.text() == col:
+                                k.checked()
+                                k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_method[index])
+
+
 
             
         
@@ -271,7 +295,7 @@ class TwoColumnWindow(QWidget):
 
 
         outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
-        # outlier_checkbox.widget.outlierUI()
+        outlier_checkbox.widget.outlierUI()
         self.featurescolumnLayout.addWidget(outlier_checkbox.cb)
         outlier_checkbox.cb.stateChanged.connect(lambda:outlier_checkbox.visbility())
 
