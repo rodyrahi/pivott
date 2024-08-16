@@ -1,7 +1,9 @@
 import openai
+
+import json
 openai.api_key = ''
 
-def automate( user_promt , parent):
+def openai_api( user_promt , parent):
 
     columns = parent.df.dataframe.columns.tolist()
 
@@ -38,4 +40,60 @@ def automate( user_promt , parent):
     )
     advice = response.choices[0].message.content
     return advice
+
+
+def auto_clean( user_promt ,parent):
+        new_json = openai_api(user_promt , parent)
+        
+        new_json = new_json.replace('json' , '')
+        new_json = new_json.replace('```' , '')
+        print(new_json , type(new_json))
+        test = json.loads(new_json)
+
+        # test = {'PassengerId': [], 'Survived': [], 'Pclass': [], 'Name': [], 'Sex': ['encoding_categorical_data'], 'Age': ['impute:mean'], 'SibSp': [], 'Parch': [], 'Ticket': [], 'Fare': ['outlier_removing'], 'Cabin': ['drop_column'], 'Embarked': ['impute:most_frequent', 'encoding_categorical_data']}
+        for i in test:
+            if len(test[i]) > 0:
+                jsonfile = json.load(open(parent.projectpath))
+                # jsonfile[i] = test[i]
+
+                print(i , test[i])
+                for j in test[i]:
+
+
+                    if 'impute' in j :
+                        print(j)
+                        strategy = j.split(':')[1]
+                        if j not in  jsonfile["impute"]["col"] and strategy not in jsonfile['impute']['strategy']:
+                            jsonfile['impute']['col'].append(i)
+                            jsonfile['impute']['strategy'].append(strategy)
+                    
+                    
+                    if 'drop_column' in j :
+                        if j not in  jsonfile["dropcol"]["col"] :
+                            jsonfile['dropcol']['col'].append(i)
+
+
+                    if 'dropna' in j :
+
+                        if j not in  jsonfile["dropna"]["col"] :
+                            jsonfile['dropna']['col'].append(i)
+                    
+                    if 'encoding_categorical_data' in j :
+                    
+                        if j not in  jsonfile["encode"]["col"] :
+                            jsonfile['encode']['col'].append(i)
+
+                    if 'outlier_removing' in j :
+                        print(j)
+                        if j not in  jsonfile["outlier"]["col"] :
+                            jsonfile['outlier']['col'].append(i)
+                            jsonfile['outlier']['method'].append("IQR") 
+                        
+                        
+
+                    with open(parent.projectpath, 'w') as file:
+                        json.dump(jsonfile, file, indent=4)
+    
+
+
 

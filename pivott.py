@@ -354,58 +354,43 @@ class TwoColumnWindow(QWidget):
         
         # Add the empty table to column2Layout
         self.column2Layout.addWidget(self.empty_table)
+        auto_button = Button('Automate with AI')
+        auto_button.clicked.connect(self.automate_with_ai)
+        self.column0Layout.addWidget(auto_button)
 
 
-        new_json = automate("hey" , self)
-        
-        new_json = new_json.replace('json' , '')
-        new_json = new_json.replace('```' , '')
-        print(new_json , type(new_json))
-        test = json.loads(new_json)
+    def automate_with_ai(self):
+        # Create a new window
+        self.ai_window = QWidget()
+        self.ai_window.setWindowTitle("AI Automation")
+        self.ai_window.setGeometry(100, 100, 400, 300)
 
-        # test = {'PassengerId': [], 'Survived': [], 'Pclass': [], 'Name': [], 'Sex': ['encoding_categorical_data'], 'Age': ['impute:mean'], 'SibSp': [], 'Parch': [], 'Ticket': [], 'Fare': ['outlier_removing'], 'Cabin': ['drop_column'], 'Embarked': ['impute:most_frequent', 'encoding_categorical_data']}
-        for i in test:
-            if len(test[i]) > 0:
-                jsonfile = json.load(open(self.projectpath))
-                # jsonfile[i] = test[i]
+        # Create a layout for the new window
+        layout = QVBoxLayout()
 
-                print(i , test[i])
-                for j in test[i]:
+        # Create a text area
+        self.ai_text_area = QTextEdit()
+        self.ai_text_area.setPlaceholderText("Write a small description of the dataset")        
+        layout.addWidget(self.ai_text_area)
 
+        # Create a button
+        ai_button = Button("Run AI Automation")
+        # ai_button.clicked.connect(auto_clean(self.ai_text_area.toPlainText(),self))
+        layout.addWidget(ai_button)
 
-                    if 'impute' in j :
-                        print(j)
-                        strategy = j.split(':')[1]
-                        if j not in  jsonfile["impute"]["col"] and strategy not in jsonfile['impute']['strategy']:
-                            jsonfile['impute']['col'].append(i)
-                            jsonfile['impute']['strategy'].append(strategy)
-                    
-                    
-                    if 'drop_column' in j :
-                        if j not in  jsonfile["dropcol"]["col"] :
-                            jsonfile['dropcol']['col'].append(i)
+        # Set the layout for the new window
+        self.ai_window.setLayout(layout)
 
+        # Show the new window
+        self.ai_window.show()
 
-                    if 'dropna' in j :
+    def run_ai_automation(self):
+        # Get the text from the text area
+        ai_input = self.ai_text_area.toPlainText()
+        # Add your AI automation logic here
+        print("AI Automation input:", ai_input)
+        # You can process the input and update the main window as needed
 
-                        if j not in  jsonfile["dropna"]["col"] :
-                            jsonfile['dropna']['col'].append(i)
-                    
-                    if 'encoding_categorical_data' in j :
-                    
-                        if j not in  jsonfile["encode"]["col"] :
-                            jsonfile['encode']['col'].append(i)
-
-                    if 'outlier_removing' in j :
-                        print(j)
-                        if j not in  jsonfile["outlier"]["col"] :
-                            jsonfile['outlier']['col'].append(i)
-                            jsonfile['outlier']['method'].append("IQR") 
-                        
-                        
-
-                    with open(self.projectpath, 'w') as file:
-                        json.dump(jsonfile, file, indent=4)
 
     def set_df(self):
         file_path, _ = QFileDialog().getOpenFileName()
