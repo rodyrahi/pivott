@@ -11,6 +11,10 @@ from dataframe_widget import *
 from feature_widgets import *
 from custom_widgets import *
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import seaborn as sns 
 
 
 
@@ -61,16 +65,43 @@ class tableWidget(QWidget):
             text_edit = QTextEdit()
             text_edit.setReadOnly(True)
             text_edit.setText(unique_values_str)
+            text_edit.setMaximumSize(400, 300)  # Set a maximum size for the text edit
 
-            # Set a maximum size for the text edit
-            text_edit.setMaximumSize(400, 300)
+
+
+            # Add distribution plot if the column is numeric
+            if self.dataframe[column_name].dtype in ['int64', 'float64']:
+                fig, ax = plt.subplots(figsize=(4, 3))
+                self.dataframe[column_name].hist(ax=ax)
+                ax.set_title(f'Distribution of {column_name}')
+                ax.set_xlabel(column_name)
+                ax.set_ylabel('Frequency')
+
+                canvas = FigureCanvas(fig)
+                canvas.setFixedSize(300, 200)
+
+                plot_action = QWidgetAction(context_menu)
+                plot_action.setDefaultWidget(canvas)
+                context_menu.addAction(plot_action)
+
+                # Add range information for numeric columns
+                min_value = self.dataframe[column_name].min()
+                max_value = self.dataframe[column_name].max()
+                range_str = f"Range: {min_value} to {max_value}"
+            else:
+                # Inform the user that range is not applicable for non-numeric columns
+                range_str = "Range: Not applicable for non-numeric data"
+
+            range_action = context_menu.addAction(range_str)
+            range_action.setEnabled(False)
+            
+            context_menu.addSeparator()
 
             # Create a QWidgetAction to hold the QTextEdit
             widget_action = QWidgetAction(context_menu)
+            
             widget_action.setDefaultWidget(text_edit)
-
-            # Add the widget action to the context menu
-            context_menu.addAction('Unique Values')
+            context_menu.addAction("Unique Values")
             context_menu.addAction(widget_action)
 
             # Show the context menu at the cursor position
