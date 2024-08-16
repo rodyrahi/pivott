@@ -1,1 +1,1 @@
-column1Layout.setSpacing(20)  
+state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 

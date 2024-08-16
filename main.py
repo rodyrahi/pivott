@@ -248,6 +248,7 @@ class TwoColumnWindow(QWidget):
                         if k.label.text() ==col:
                             k.checked()
                             k.func( state = True, checkbox=k.checkbox , column=col)
+
             if i[0] == 'outlier':
                 
                     list_col = list(i[1]["col"])
@@ -258,7 +259,8 @@ class TwoColumnWindow(QWidget):
                         for index,col in enumerate(list_col):
                             if k.label.text() == col:
                                 k.checked()
-                                k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_method[index])
+                                # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
+                                k.func( state = True, checkbox=k.checkbox , method=list_method[index] , col=col )
 
 
 
@@ -295,10 +297,10 @@ class TwoColumnWindow(QWidget):
 
 
 
-        outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
-        outlier_checkbox.widget.outlierUI()
-        self.featurescolumnLayout.addWidget(outlier_checkbox.cb)
-        outlier_checkbox.cb.stateChanged.connect(lambda:outlier_checkbox.visbility())
+        self.outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
+        self.outlier_checkbox.widget.outlierUI()
+        self.featurescolumnLayout.addWidget(self.outlier_checkbox.cb)
+        self.outlier_checkbox.cb.stateChanged.connect(lambda:self.outlier_checkbox.visbility())
 
         
         encoding_checkbox = popCheckBox('Encoding Categorical' , parent=self , widget=featureWidget )

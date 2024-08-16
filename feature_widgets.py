@@ -115,7 +115,7 @@ class featureWidget(QWidget):
         allcolumns = self.df.dataframe.columns
         for column in allcolumns:
 
-            outliercol = feature(column , self , self.drop_column)
+            outliercol = feature(column , self , self.outlier_column)
             outliercol.outlier_col()
             self.parent.outlier_checkboxes.append(outliercol)
 
@@ -222,7 +222,7 @@ class featureWidget(QWidget):
 
                 diff = col[1][~col[1].index.isin(self.df.dataframe.index )]
                 print(diff) 
-                self.df.dataframe = pd.concat([self.df.dataframe, diff], ignore_index=True)
+                self.df.dataframe = pd.concat( [self.df.dataframe, diff], ignore_index=True)
 
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
@@ -289,6 +289,7 @@ class featureWidget(QWidget):
         self.df.dataframe[col] = le.fit_transform(self.df.dataframe[col])
 
     def drop_column(self , state , checkbox ,column):
+
         if checkbox.isChecked():
 
             jsonfile = self.read_json()
@@ -318,6 +319,8 @@ class featureWidget(QWidget):
 
     def outlier_column(self , state , checkbox ,list ,column):
 
+        print(checkbox.isChecked())
+
         if checkbox.isChecked():
 
             jsonfile = self.read_json()
@@ -329,14 +332,19 @@ class featureWidget(QWidget):
  
                     self.outlier_IQR(column)
 
-                    self.parent.df.dataframe = self.df.dataframe
+                    # self.parent.df.dataframe = self.df.dataframe
+                    self.parent.df.dataframe[column] = self.df.dataframe[column]
                     self.parent.create_table()
             
         else:
+            print("test")
             col = inArray(self.parent.unchecked, column+'outlier')
             if col:
+                
+                diff = col[1][~col[1].index.isin(self.df.dataframe.index )]
+                print(diff) 
+                self.df.dataframe = pd.concat( [self.df.dataframe, diff], ignore_index=True)
 
-                self.df.dataframe[column] = col[1][column]
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
 

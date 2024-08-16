@@ -173,6 +173,8 @@ class feature(QWidget):
         self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
     
     def outlier_connect(self):
-        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column, strategy= self.method: self.func(state,checkbox, strategy.currentText() , col))
+        # outliercol.checkbox.stateChanged.connect(lambda state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column : self.outlier_column( state, checkbox ,list.currentText() , col))
+
+        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox, list= self.method ,   col= self.column: self.func(state,checkbox,list.currentText() , col))
      
 
