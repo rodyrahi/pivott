@@ -192,26 +192,20 @@ class featureWidget(QWidget):
         if checkbox.isChecked():
 
             jsonfile = self.read_json()
-            # try:
-            #     if not column in jsonfile["dropna"]["col"]:
-            #         jsonfile["dropna"]["col"].append(column)
-            # except:
-            
             jsonfile["dropna"] = {"col":[column]}
-
             self.Write_json(jsonfile)    
 
             if column == "All":
 
 
                 if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
-                    self.drop_all(" ")
+                    self.dropna_all()
                     self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
 
             else:
                 if checkbox.save_unchecked(self.parent , self.df , column , 'dropna'):
-                    self.drop_col(column)
+                    self.dropna_col(column)
 
                     self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
@@ -234,10 +228,10 @@ class featureWidget(QWidget):
 
 
 
-    def drop_all(self , all):
+    def dropna_all(self):
         self.df.dataframe = self.df.dataframe.dropna()
     
-    def drop_col(self , col):
+    def dropna_col(self , col):
         print("test")
         self.df.dataframe = self.df.dataframe.dropna(subset=[col])
 

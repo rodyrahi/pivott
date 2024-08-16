@@ -1,6 +1,6 @@
 import sys
 import os
-from PySide2 import QtWidgets
+# from PySide2 import QtWidgets
 import qdarkstyle
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -190,7 +190,7 @@ class TwoColumnWindow(QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.mainLayout.addWidget(self.scroll_area)
         
-        self.scroll_area.setMaximumSize(370, 1000)
+        self.scroll_area.setMaximumSize(380, 1000)
         self.scroll_area.hide()
         
         self.mainLayout.addLayout(self.column2Layout)
@@ -313,10 +313,10 @@ class TwoColumnWindow(QWidget):
         
 
 
-        drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=featureWidget  )
-        drop_nan_checkbox.widget.dropnaUI()
-        self.featurescolumnLayout.addWidget(drop_nan_checkbox.cb)
-        drop_nan_checkbox.cb.stateChanged.connect(lambda:drop_nan_checkbox.visbility())
+        self.drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=featureWidget  )
+        self.drop_nan_checkbox.widget.dropnaUI()
+        self.featurescolumnLayout.addWidget(self.drop_nan_checkbox.cb)
+        self.drop_nan_checkbox.cb.stateChanged.connect(lambda:self.drop_nan_checkbox.visbility())
 
         
         

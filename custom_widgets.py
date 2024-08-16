@@ -112,7 +112,7 @@ class feature(QWidget):
         self.hbox.addWidget(self.label)
         self.hbox.addWidget(self.checkbox)
         self.hbox.setAlignment(Qt.AlignTop)
-        self.connect_func = self.dropna_connect
+        self.connect_func = self.dropcol_connect
 
 
     def impute_col(self):
@@ -164,6 +164,9 @@ class feature(QWidget):
         self.connect_func()
     
     def dropna_connect(self):
+        self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
+    
+    def dropcol_connect(self):
         self.checkbox.stateChanged.connect(lambda state=True , checkbox= self.checkbox,  col= self.column: self.func(state,checkbox , col))
 
     def impute_connect(self):
