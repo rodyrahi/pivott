@@ -4,7 +4,7 @@ import json
 openai.api_key = ''
 
 def openai_api( user_promt , parent):
-
+    print(user_promt)
     columns = parent.df.dataframe.columns.tolist()
 
     # Get column ranges and check for NaN values
@@ -22,7 +22,7 @@ def openai_api( user_promt , parent):
                 'has_nan': column_data.isna().any()
             }
 
-    prompt = f"The dataset is a Titanic dataset which tells about the survival of passengers. The dataset has the following columns and their properties:\n\n"
+    prompt = f"{user_promt}. The dataset has the following columns and their properties:\n\n"
     for column, info in column_info.items():
         range_info = f"range: {info['range']}" if info['range'] else "non-numeric"
         nan_info = "contains NaN" if info['has_nan'] else "no NaN"
@@ -42,8 +42,9 @@ def openai_api( user_promt , parent):
     return advice
 
 
-def auto_clean( user_promt ,parent):
-        new_json = openai_api(user_promt , parent)
+def auto_clean( text_area ,parent):
+    # print(text_area.toPlainText())
+        new_json = openai_api(text_area.toPlainText() , parent)
         
         new_json = new_json.replace('json' , '')
         new_json = new_json.replace('```' , '')
@@ -93,6 +94,9 @@ def auto_clean( user_promt ,parent):
 
                     with open(parent.projectpath, 'w') as file:
                         json.dump(jsonfile, file, indent=4)
+
+
+        parent.select_source(jsonfile)
     
 
 

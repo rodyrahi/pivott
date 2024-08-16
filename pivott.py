@@ -369,14 +369,18 @@ class TwoColumnWindow(QWidget):
         layout = QVBoxLayout()
 
         # Create a text area
+
         self.ai_text_area = QTextEdit()
+               
         self.ai_text_area.setPlaceholderText("Write a small description of the dataset")        
         layout.addWidget(self.ai_text_area)
 
         # Create a button
         ai_button = Button("Run AI Automation")
-        # ai_button.clicked.connect(auto_clean(self.ai_text_area.toPlainText(),self))
+
+        ai_button.clicked.connect(lambda:auto_clean(self.ai_text_area,self))
         layout.addWidget(ai_button)
+        layout.setAlignment(Qt.AlignCenter)
 
         # Set the layout for the new window
         self.ai_window.setLayout(layout)
@@ -384,12 +388,7 @@ class TwoColumnWindow(QWidget):
         # Show the new window
         self.ai_window.show()
 
-    def run_ai_automation(self):
-        # Get the text from the text area
-        ai_input = self.ai_text_area.toPlainText()
-        # Add your AI automation logic here
-        print("AI Automation input:", ai_input)
-        # You can process the input and update the main window as needed
+        
 
 
     def set_df(self):
