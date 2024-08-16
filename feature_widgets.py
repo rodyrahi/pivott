@@ -129,14 +129,14 @@ class featureWidget(QWidget):
             
             jsonfile = self.read_json()
 
-            # try:
-            #     if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
+            try:
+                if not column in jsonfile["impute"]["col"] and not strategy in jsonfile["impute"]["strategy"]:
                     
-            #         jsonfile["impute"]["col"].append(column)
-            #         jsonfile["impute"]["strategy"].append(strategy)
-            # except:
+                    jsonfile["impute"]["col"].append(column)
+                    jsonfile["impute"]["strategy"].append(strategy)
+            except:
             
-            jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
+                jsonfile["impute"] = {"col":[column], "strategy":[strategy]}
 
 
             self.Write_json(jsonfile)
@@ -192,7 +192,18 @@ class featureWidget(QWidget):
         if checkbox.isChecked():
 
             jsonfile = self.read_json()
-            jsonfile["dropna"] = {"col":[column]}
+
+            try:
+                if not column in jsonfile["dropna"]["col"] :
+                    
+                    jsonfile["dropna"]["col"].append(column)
+                    
+            except:
+            
+                jsonfile["dropna"] = {"col":[column]}
+
+
+
             self.Write_json(jsonfile)    
 
             if column == "All":
@@ -240,12 +251,12 @@ class featureWidget(QWidget):
         if checkbox.isChecked():
                 
                 jsonfile = self.read_json()
-                # try:
-                #     if not column in jsonfile["enocde"]["col"]:
-                #         jsonfile["encode"]["col"].append(column)
-                # except:
+                try:
+                    if not column in jsonfile["enocde"]["col"]:
+                        jsonfile["encode"]["col"].append(column)
+                except:
                 
-                jsonfile["encode"] = {"col":[column]}
+                    jsonfile["encode"] = {"col":[column]}
 
 
                 self.Write_json(jsonfile)
@@ -287,7 +298,11 @@ class featureWidget(QWidget):
         if checkbox.isChecked():
 
             jsonfile = self.read_json()
-            jsonfile["dropcol"] = {"col":[column]}
+            try:
+                if not column in jsonfile["dropcol"]["col"]:
+                    jsonfile["dropcol"]["col"].append(column)
+            except:
+                jsonfile["dropcol"] = {"col":[column]}
             self.Write_json(jsonfile)
 
 
@@ -318,7 +333,11 @@ class featureWidget(QWidget):
         if checkbox.isChecked():
 
             jsonfile = self.read_json()
-            jsonfile["outlier"] = {"col":[column], "method":[list]}
+            try:
+                if not column in jsonfile["outlier"]["col"]:
+                    jsonfile["outlier"]["col"].append(column)
+            except:
+                jsonfile["outlier"] = {"col":[column], "method":[list]}
             self.Write_json(jsonfile)
 
             if list == "IQR":

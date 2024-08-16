@@ -1,1 +1,1 @@
-state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
+appen
