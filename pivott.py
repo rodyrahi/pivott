@@ -11,6 +11,7 @@ from dataframe_widget import *
 from feature_widgets import *
 from custom_widgets import *
 from automation import *
+from api import *
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -18,7 +19,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 
 
-
+global VERSION
+VERSION = 0.000001
 
 
 
@@ -112,6 +114,7 @@ class TwoColumnWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowIcon(QIcon('icon.png'))
+        
         self.df = None
         self.filepath = None
         self.projectpath = None
@@ -444,11 +447,53 @@ class TwoColumnWindow(QWidget):
         
 
             
+class UpdateDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Software Update")
+        self.setFixedSize(300, 150)
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+
+        message_label = QLabel("A new update is available!")
+        message_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(message_label)
+
+        version_label = QLabel(f"Version: {VERSION}")
+        version_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(version_label)
+
+        update_button = Button("Update Now")
+        update_button.clicked.connect(self.perform_update)
+        layout.addWidget(update_button)
+
+        close_button = Button("Close")
+        close_button.clicked.connect(self.close)
+        layout.addWidget(close_button)
+
+        self.setLayout(layout)
+
+    def perform_update(self):
+        import webbrowser
+        webbrowser.open("https://pivott.click")
+        # QMessageBox.information(self, "Update", "Update page opened in your browser.")
+    def show_update_message(self):
+        self.exec_()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = TwoColumnWindow()
+
+    isupdate = get_update(version=VERSION).update()
+    print(isupdate)
+    if get_update(version={"version":VERSION}).update()["update"] == "yes":
+
+
+        window = UpdateDialog()
+    else:
+        window = TwoColumnWindow()
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     window.show()
     sys.exit(app.exec_())

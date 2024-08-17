@@ -3,6 +3,10 @@ import openai
 import json
 openai.api_key = ''
 
+
+
+
+
 def openai_api( user_promt , parent):
     print(user_promt)
     columns = parent.df.dataframe.columns.tolist()
@@ -30,16 +34,18 @@ def openai_api( user_promt , parent):
     
 
 
-    # prompt += "\nWhat data cleaning steps should be taken for each column?"
+    prompt += "\nWhat data cleaning steps should be taken for each column?"
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "You are a data scientist"},
-            {"role": "user", "content": f"{prompt}:Without any comment, return the result in the following JSON format {{column: look every single column very carefully and from these steps select one or more (try to select more steps if possible ) also if imputing tell the strategy [dropna,impute:mean/median/most_frequent,encoding_categorical_data,drop_duplicates,drop_column,outlier_removing]}}"  }
+            {"role": "system", "content": "You are an expert data scientist."},
+            {"role": "user", "content": """{prompt}:Without any comment, return the result in the following JSON format 
+             {{column: look every single column very carefully and from these steps select one or more (try to select more steps if possible ) also if imputing tell the strategy [dropna,impute:mean/median/most_frequent,encoding_categorical_data,drop_duplicates,drop_column,outlier_removing]}}"""  }
         ]
     )
     advice = response.choices[0].message.content
     return advice
+
 
 
 def auto_clean( text_area ,parent):
