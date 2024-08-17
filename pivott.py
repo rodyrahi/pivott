@@ -20,7 +20,7 @@ import seaborn as sns
 
 
 global VERSION
-VERSION = 0.000001
+VERSION = 0.001
 
 
 

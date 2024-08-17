@@ -1,7 +1,10 @@
-import openai
+# import openai
 
 import json
-openai.api_key = ''
+from api import get_update
+
+
+# openai.api_key = ''
 
 
 
@@ -35,22 +38,25 @@ def openai_api( user_promt , parent):
 
 
     prompt += "\nWhat data cleaning steps should be taken for each column?"
-    response = openai.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "You are an expert data scientist."},
-            {"role": "user", "content": """{prompt}:Without any comment, return the result in the following JSON format 
-             {{column: look every single column very carefully and from these steps select one or more (try to select more steps if possible ) also if imputing tell the strategy [dropna,impute:mean/median/most_frequent,encoding_categorical_data,drop_duplicates,drop_column,outlier_removing]}}"""  }
-        ]
-    )
-    advice = response.choices[0].message.content
-    return advice
+    # response = openai.chat.completions.create(
+    #     model="gpt-4o",
+    #     messages=[
+    #         {"role": "system", "content": "You are an expert data scientist."},
+    #         {"role": "user", "content": """{prompt}:Without any comment, return the result in the following JSON format 
+    #          {{column: look every single column very carefully and from these steps select one or more (try to select more steps if possible ) also if imputing tell the strategy [dropna,impute:mean/median/most_frequent,encoding_categorical_data,drop_duplicates,drop_column,outlier_removing]}}"""  }
+    #     ]
+    # )
+
+
+    # advice = response.choices[0].message.content
+    return get_update(parent.version).get_data({'prompt': prompt})
 
 
 
 def auto_clean( text_area ,parent):
     # print(text_area.toPlainText())
         new_json = openai_api(text_area.toPlainText() , parent)
+        print(new_json)
         
         new_json = new_json.replace('json' , '')
         new_json = new_json.replace('```' , '')
