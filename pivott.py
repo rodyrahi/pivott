@@ -224,7 +224,7 @@ class TwoColumnWindow(QWidget):
             self.projectpath = save_location
             project_name = os.path.splitext(os.path.basename(save_location))[0]
             with open(save_location, 'w') as f:
-                json.dump({"data_path":"" , "impute": {"col": [], "strategy": []}, "encode": {"col": []}, "dropna": {"col": []}}, f)
+                json.dump({"data_path":"" , "impute": {"col": [], "strategy": []}, "encode": {"col": []}, "dropna": {"col": []} ,"dropcol": {"col": []} , "outlier": {"col": [] , "method": []}  } , f)
                         
 
     def open_project(self):
