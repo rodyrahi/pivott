@@ -55,29 +55,29 @@ def openai_api( user_promt , parent):
 
 def auto_clean( text_area ,parent):
     # print(text_area.toPlainText())
-        # new_json = openai_api(text_area.toPlainText() , parent)
-        # print(new_json)
+        new_json = openai_api(text_area.toPlainText() , parent)
+        print(new_json)
         
-        # new_json = new_json["result"].replace('json' , '')
-        # new_json = new_json.replace('```' , '')
-        # print(new_json , type(new_json))
+        new_json = new_json["result"].replace('json' , '')
+        new_json = new_json.replace('```' , '')
+        print(new_json , type(new_json))
 
-        new_json = '''
-            {
-            "PassengerId": ["drop_duplicates"],
-            "Survived": [],
-            "Pclass": ["drop_duplicates", "encoding_categorical_data"],
-            "Name": ["drop_duplicates"],
-            "Sex": ["encoding_categorical_data"],
-            "Age": ["impute:mean", "drop_duplicates", "outlier_removing"],
-            "SibSp": ["drop_duplicates"],
-            "Parch": [],
-            "Ticket": ["drop_duplicates"],
-            "Fare": ["impute:mean", "drop_duplicates", "outlier_removing"],
-            "Cabin": ["dropna"],
-            "Embarked": ["encoding_categorical_data"]
-            }
-            '''
+        # new_json = '''
+        #     {
+        #     "PassengerId": ["drop_duplicates"],
+        #     "Survived": [],
+        #     "Pclass": ["drop_duplicates", "encoding_categorical_data"],
+        #     "Name": ["drop_duplicates"],
+        #     "Sex": ["encoding_categorical_data"],
+        #     "Age": ["impute:mean", "drop_duplicates", "outlier_removing"],
+        #     "SibSp": ["drop_duplicates"],
+        #     "Parch": [],
+        #     "Ticket": ["drop_duplicates"],
+        #     "Fare": ["impute:mean", "drop_duplicates", "outlier_removing"],
+        #     "Cabin": ["dropna"],
+        #     "Embarked": ["encoding_categorical_data"]
+        #     }
+        #     '''
 
         test = json.loads(new_json)
 
