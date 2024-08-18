@@ -55,61 +55,72 @@ def openai_api( user_promt , parent):
 
 def auto_clean( text_area ,parent):
     # print(text_area.toPlainText())
-        new_json = openai_api(text_area.toPlainText() , parent)
-        print(new_json)
+        # new_json = openai_api(text_area.toPlainText() , parent)
+        # print(new_json)
         
-        new_json = new_json.replace('json' , '')
-        new_json = new_json.replace('```' , '')
-        print(new_json , type(new_json))
+        # new_json = new_json["result"].replace('json' , '')
+        # new_json = new_json.replace('```' , '')
+        # print(new_json , type(new_json))
+
+        new_json = '''
+            {
+            "PassengerId": ["drop_duplicates"],
+            "Survived": [],
+            "Pclass": ["drop_duplicates", "encoding_categorical_data"],
+            "Name": ["drop_duplicates"],
+            "Sex": ["encoding_categorical_data"],
+            "Age": ["impute:mean", "drop_duplicates", "outlier_removing"],
+            "SibSp": ["drop_duplicates"],
+            "Parch": [],
+            "Ticket": ["drop_duplicates"],
+            "Fare": ["impute:mean", "drop_duplicates", "outlier_removing"],
+            "Cabin": ["dropna"],
+            "Embarked": ["encoding_categorical_data"]
+            }
+            '''
+
         test = json.loads(new_json)
 
-        # test = {'PassengerId': [], 'Survived': [], 'Pclass': [], 'Name': [], 'Sex': ['encoding_categorical_data'], 'Age': ['impute:mean'], 'SibSp': [], 'Parch': [], 'Ticket': [], 'Fare': ['outlier_removing'], 'Cabin': ['drop_column'], 'Embarked': ['impute:most_frequent', 'encoding_categorical_data']}
-        for i in test:
-            if len(test[i]) > 0:
-                jsonfile = json.load(open(parent.projectpath))
-                # jsonfile[i] = test[i]
+        # Load the jsonfile once, outside the loop
+        with open(parent.projectpath) as file:
+            jsonfile = json.load(file)
 
-                print(i , test[i])
-                for j in test[i]:
+        for column, actions in test.items():
+            if not actions:
+                continue
+            
+            print(column, actions)
+            
+            for action in actions:
+                if 'impute' in action:
+                    strategy = action.split(':')[1]
+                    if column not in jsonfile["impute"]["col"]:
+                        jsonfile["impute"]["col"].append(column)
+                    if strategy not in jsonfile["impute"]["strategy"]:
+                        jsonfile["impute"]["strategy"].append(strategy)
 
+                elif 'drop_column' in action:
+                    if column not in jsonfile["dropcol"]["col"]:
+                        jsonfile["dropcol"]["col"].append(column)
 
-                    if 'impute' in j :
-                        print(j)
-                        strategy = j.split(':')[1]
-                        if j not in  jsonfile["impute"]["col"] and strategy not in jsonfile['impute']['strategy']:
-                            jsonfile['impute']['col'].append(i)
-                            jsonfile['impute']['strategy'].append(strategy)
-                    
-                    
-                    if 'drop_column' in j :
-                        if j not in  jsonfile["dropcol"]["col"] :
-                            jsonfile['dropcol']['col'].append(i)
+                elif 'dropna' in action:
+                    if column not in jsonfile["dropna"]["col"]:
+                        jsonfile["dropna"]["col"].append(column)
 
+                elif 'encoding_categorical_data' in action:
+                    if column not in jsonfile["encode"]["col"]:
+                        jsonfile["encode"]["col"].append(column)
 
-                    if 'dropna' in j :
+                elif 'outlier_removing' in action:
+                    if column not in jsonfile["outlier"]["col"]:
+                        jsonfile["outlier"]["col"].append(column)
+                        jsonfile["outlier"]["method"].append("IQR")
 
-                        if j not in  jsonfile["dropna"]["col"] :
-                            jsonfile['dropna']['col'].append(i)
-                    
-                    if 'encoding_categorical_data' in j :
-                    
-                        if j not in  jsonfile["encode"]["col"] :
-                            jsonfile['encode']['col'].append(i)
+        # Save the updated jsonfile once, after processing all columns
+        with open(parent.projectpath, 'w') as file:
+            json.dump(jsonfile, file, indent=4)
 
-                    if 'outlier_removing' in j :
-                        print(j)
-                        if j not in  jsonfile["outlier"]["col"] :
-                            jsonfile['outlier']['col'].append(i)
-                            jsonfile['outlier']['method'].append("IQR") 
-                        
-                        
-
-                    with open(parent.projectpath, 'w') as file:
-                        json.dump(jsonfile, file, indent=4)
-
-
-        parent.select_source(jsonfile)
-    
+        parent.select_source(jsonfile)    
 
 
 

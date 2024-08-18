@@ -115,6 +115,8 @@ class TwoColumnWindow(QWidget):
         super().__init__()
         self.setWindowIcon(QIcon('icon.png'))
         
+        self.version = VERSION
+
         self.df = None
         self.filepath = None
         self.projectpath = None
@@ -289,13 +291,13 @@ class TwoColumnWindow(QWidget):
                     list_col = list(i[1]["col"])
                     list_method = list(i[1]["method"])
 
-                    for k in self.impute_checkboxes:
+                    for k in self.outlier_checkboxes:
                         
                         for index,col in enumerate(list_col):
                             if k.label.text() == col:
                                 k.checked()
                                 # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
-                                k.func( state = True, checkbox=k.checkbox , method=list_method[index] , col=col )
+                                k.func( state = True, checkbox=k.checkbox , list=list_method[index] , column=col )
 
 
 

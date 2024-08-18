@@ -1,1 +1,1 @@
-{"data_path": "D:/pivott/test.csv", "impute": {"col": ["Age", "Embarked"], "strategy": ["mean", "most_frequent"]}, "encode": {"col": ["Embarked"]}, "dropna": {"col": ["PassengerId", "Survived", "Pclass", "Name", "Sex", "SibSp", "Parch", "Ticket", "Fare"]}, "dropcol": {"col": ["Cabin"]}, "outlier": {"col": ["Fare"], "method": ["IQR"]}}
+{"data_path": "D:/pivott/test.csv", "encode": {"col": ["Embarked"]}, "outlier": {"col": ["Age"], "method": ["IQR"]}, "dropcol": {"col": []}, "dropna": {"col": ["Cabin"]}, "impute": {"col": ["Age", "Fare"], "strategy": ["mean"]}}
