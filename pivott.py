@@ -22,6 +22,8 @@ import seaborn as sns
 global VERSION
 VERSION = 0.001
 
+print(VERSION)
+
 
 
 class tableWidget(QWidget):
