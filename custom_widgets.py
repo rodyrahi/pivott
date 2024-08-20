@@ -149,11 +149,27 @@ class feature(QWidget):
 
         self.checkbox = SQCheckBox("Remove Outlier")
         self.method = QComboBox()
-        self.method.addItems(['Z-Score', 'IQR'])
+        self.method.addItems([ 'IQR' , 'Z-Score'])
 
         
         self.hbox.addWidget(self.label)
         self.hbox.addWidget(self.method)
+        self.hbox.addWidget(self.checkbox)
+        self.hbox.setAlignment(Qt.AlignTop)
+        self.connect_func = self.outlier_connect
+
+    def dropduplicate_col(self):
+        self.hbox = QHBoxLayout()
+        print("ui")
+        # self.label = QLabel(self.column)
+
+        self.checkbox = SQCheckBox("Drop Duplicates")
+        # self.method = QComboBox()
+        # self.method.addItems(['Z-Score', 'IQR'])
+
+        
+        # self.hbox.addWidget(self.label)
+        # self.hbox.addWidget(self.method)
         self.hbox.addWidget(self.checkbox)
         self.hbox.setAlignment(Qt.AlignTop)
         self.connect_func = self.outlier_connect

@@ -22,7 +22,7 @@ import seaborn as sns
 global VERSION
 VERSION = 0.001
 
-print(VERSION)
+print("Version :" ,VERSION)
 
 
 
@@ -60,9 +60,8 @@ class tableWidget(QWidget):
         def show_unique_values(self, pos):
             logical_index = self.tableWidget.horizontalHeader().logicalIndexAt(pos)
             column_name = self.dataframe.columns[logical_index]
-            unique_values = self.dataframe[column_name].unique().tolist()
-            unique_values_str = '\n'.join(map(str, unique_values))
-
+            value_counts = self.dataframe[column_name].value_counts().sort_index()
+            unique_values_str = '\n'.join(f"{value} :{count}" for value, count in value_counts.items())
             # Create a context menu
             context_menu = QMenu(self)
 
@@ -94,9 +93,24 @@ class tableWidget(QWidget):
                 max_value = self.dataframe[column_name].max()
                 range_str = f"Range: {min_value} to {max_value}"
             else:
-                # Inform the user that range is not applicable for non-numeric columns
-                range_str = "Range: Not applicable for non-numeric data"
+                # Create graph of count for non-numeric columns
+                fig, ax = plt.subplots(figsize=(4, 3))
+                value_counts = self.dataframe[column_name].value_counts()
+                value_counts.plot(kind='bar', ax=ax)
+                ax.set_title(f'Count of {column_name}')
+                ax.set_xlabel(column_name)
+                ax.set_ylabel('Count')
+                plt.xticks(rotation=45, ha='right')
+                plt.tight_layout()
 
+                canvas = FigureCanvas(fig)
+                canvas.setFixedSize(300, 200)
+
+                plot_action = QWidgetAction(context_menu)
+                plot_action.setDefaultWidget(canvas)
+                context_menu.addAction(plot_action)
+
+                range_str = "Range: Not applicable for non-numeric data"
             range_action = context_menu.addAction(range_str)
             range_action.setEnabled(False)
             
@@ -149,6 +163,7 @@ class TwoColumnWindow(QWidget):
         self.dropna_checkboxes = []
         self.dropcol_checkboxes = []
         self.outlier_checkboxes = []
+        self.duplicate_checkboxes = []
 
         self.initUI()
 
@@ -316,9 +331,12 @@ class TwoColumnWindow(QWidget):
         select_button.clicked.connect(self.set_df)
         self.featurescolumnLayout.addWidget(select_button)
 
-        self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
+        # self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
 
-        
+        self.drop_duplicate_checkbox = popCheckBox('Drop Duplicates' , parent=self , widget=featureWidget  )
+        self.drop_duplicate_checkbox.widget.dropduplicateUI()
+        self.featurescolumnLayout.addWidget(self.drop_duplicate_checkbox.cb)
+        self.drop_duplicate_checkbox.cb.stateChanged.connect(lambda:self.drop_duplicate_checkbox.visbility())
 
 
         self.drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=featureWidget  )
@@ -490,14 +508,16 @@ class UpdateDialog(QDialog):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    isupdate = get_update(version=VERSION).update()
-    print(isupdate)
-    if get_update(version={"version":VERSION}).update()["update"] == "yes":
+
+    window = TwoColumnWindow()
+    # isupdate = get_update(version=VERSION).update()
+    # print(isupdate)
+    # if get_update(version={"version":VERSION}).update()["update"] == "yes":
 
 
-        window = UpdateDialog()
-    else:
-        window = TwoColumnWindow()
+    #     window = UpdateDialog()
+    # else:
+    #     window = TwoColumnWindow()
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     window.show()
     sys.exit(app.exec_())

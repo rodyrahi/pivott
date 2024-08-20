@@ -63,6 +63,15 @@ class featureWidget(QWidget):
                 return json.dump(jsonfile, file ) 
           
         
+
+    def dropduplicateUI(self):
+        duplicatecol = feature("All" , self , self.drop_duplicate_all)
+        duplicatecol.dropduplicate_col()
+        self.parent.duplicate_checkboxes.append(duplicatecol)
+        duplicate_cb = duplicatecol.checkbox
+        duplicate_cb.stateChanged.connect(lambda state , col="All" , checkbox=duplicate_cb: self.drop_duplicate_all(state , checkbox ,col))
+        self.scroll_layout.addLayout(duplicatecol.hbox)
+    
     def imputeUI(self):
         
         all_na_cols = self.df.dataframe.columns[self.df.dataframe.isna().any()].tolist()
@@ -209,7 +218,7 @@ class featureWidget(QWidget):
             if column == "All":
 
 
-                if checkbox.save_unchecked(self.parent , self.df , col , 'dropna'):
+                if checkbox.save_unchecked(self.parent , self.df , column , 'dropna'):
                     self.dropna_all()
                     self.parent.df.dataframe = self.df.dataframe
                     self.parent.create_table()
@@ -380,3 +389,24 @@ class featureWidget(QWidget):
         upper_bound = q3 + (1.5 * iqr)
         outliers = self.df.dataframe[(self.df.dataframe[col] < lower_bound) | (self.df.dataframe[col] > upper_bound)]
         self.df.dataframe = self.df.dataframe.drop(outliers.index)
+    
+    def drop_duplicate_all(self , state , checkbox ,column):
+        if checkbox.isChecked():
+            jsonfile = self.read_json()
+            try:
+                if not col in jsonfile["dropduplicates"]["col"]:
+                    jsonfile["dropduplicates"]["col"].append(col)
+            except:
+                jsonfile["dropduplicates"] = {"col":[column]}
+            self.Write_json(jsonfile)
+
+            if checkbox.save_unchecked(self.parent , self.df , column , 'dropduplicates'):
+            
+                self.drop_duplicates()
+
+                # self.parent.df.dataframe = self.df.dataframe
+                self.parent.df.dataframe[column] = self.df.dataframe[column]
+                self.parent.create_table()
+    
+    def drop_duplicates(self):
+        self.df.dataframe = self.parent.df.dataframe.drop_duplicate()
