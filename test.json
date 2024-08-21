@@ -1,1 +1,1 @@
-{"data_path": "D:/pivott/test.csv", "encode": {"col": ["Embarked"]}, "outlier": {"col": ["Age"], "method": ["IQR"]}, "dropcol": {"col": []}, "dropna": {"col": ["Cabin"]}, "impute": {"col": ["Age", "Fare"], "strategy": ["mean"]}}
+{"data_path": "test.csv"}

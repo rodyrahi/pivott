@@ -7,16 +7,14 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 import json
+from dataframe_table import *
 from dataframe_widget import *
 from feature_widgets import *
 from custom_widgets import *
 from automation import *
 from api import *
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import seaborn as sns 
+
 
 
 global VERSION
@@ -26,105 +24,6 @@ print("Version :" ,VERSION)
 
 
 
-class tableWidget(QWidget):
-        def __init__(self, dataframe):
-            super().__init__()
-
-            self.dataframe = dataframe
-            self.initUI()
-
-        def initUI(self):
-            layout = QVBoxLayout()
-
-            # Create QTableWidget
-            self.tableWidget = QTableWidget()
-            self.tableWidget.setRowCount(self.dataframe.shape[0])
-            self.tableWidget.setColumnCount(self.dataframe.shape[1])
-            self.tableWidget.setHorizontalHeaderLabels(self.dataframe.columns)
-
-            # Fill QTableWidget with DataFrame data
-            for row in range(self.dataframe.shape[0]):
-                for col in range(self.dataframe.shape[1]):
-                    item = QTableWidgetItem(str(self.dataframe.iat[row, col]))
-                    self.tableWidget.setItem(row, col, item)
-
-            # Connect header right-click event to show unique values
-            self.tableWidget.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
-            self.tableWidget.horizontalHeader().customContextMenuRequested.connect(self.show_unique_values)
-
-            layout.addWidget(self.tableWidget)
-            self.setLayout(layout)
-            self.setWindowTitle('DataFrame Viewer')
-
-
-        def show_unique_values(self, pos):
-            logical_index = self.tableWidget.horizontalHeader().logicalIndexAt(pos)
-            column_name = self.dataframe.columns[logical_index]
-            value_counts = self.dataframe[column_name].value_counts().sort_index()
-            unique_values_str = '\n'.join(f"{value} :{count}" for value, count in value_counts.items())
-            # Create a context menu
-            context_menu = QMenu(self)
-
-            # Create a QTextEdit for displaying unique values
-            text_edit = QTextEdit()
-            text_edit.setReadOnly(True)
-            text_edit.setText(unique_values_str)
-            text_edit.setMaximumSize(400, 300)  # Set a maximum size for the text edit
-
-
-
-            # Add distribution plot if the column is numeric
-            if self.dataframe[column_name].dtype in ['int64', 'float64']:
-                fig, ax = plt.subplots(figsize=(4, 3))
-                self.dataframe[column_name].hist(ax=ax)
-                ax.set_title(f'Distribution of {column_name}')
-                ax.set_xlabel(column_name)
-                ax.set_ylabel('Frequency')
-
-                canvas = FigureCanvas(fig)
-                canvas.setFixedSize(300, 200)
-
-                plot_action = QWidgetAction(context_menu)
-                plot_action.setDefaultWidget(canvas)
-                context_menu.addAction(plot_action)
-
-                # Add range information for numeric columns
-                min_value = self.dataframe[column_name].min()
-                max_value = self.dataframe[column_name].max()
-                range_str = f"Range: {min_value} to {max_value}"
-            else:
-                # Create graph of count for non-numeric columns
-                fig, ax = plt.subplots(figsize=(4, 3))
-                value_counts = self.dataframe[column_name].value_counts()
-                value_counts.plot(kind='bar', ax=ax)
-                ax.set_title(f'Count of {column_name}')
-                ax.set_xlabel(column_name)
-                ax.set_ylabel('Count')
-                plt.xticks(rotation=45, ha='right')
-                plt.tight_layout()
-
-                canvas = FigureCanvas(fig)
-                canvas.setFixedSize(300, 200)
-
-                plot_action = QWidgetAction(context_menu)
-                plot_action.setDefaultWidget(canvas)
-                context_menu.addAction(plot_action)
-
-                range_str = "Range: Not applicable for non-numeric data"
-            range_action = context_menu.addAction(range_str)
-            range_action.setEnabled(False)
-            
-            context_menu.addSeparator()
-
-            # Create a QWidgetAction to hold the QTextEdit
-            widget_action = QWidgetAction(context_menu)
-            
-            widget_action.setDefaultWidget(text_edit)
-            context_menu.addAction("Unique Values")
-            context_menu.addAction(widget_action)
-
-            # Show the context menu at the cursor position
-            context_menu.exec_(QCursor.pos())
 
 class TwoColumnWindow(QWidget):
     def __init__(self):
@@ -522,20 +421,3 @@ if __name__ == '__main__':
     window.show()
     sys.exit(app.exec_())
 
-
-
-
-# def get_travel_advice():
-#     prompt = f"the dataset is a ticanic dataset wihich tells about the survival of the passenger , the dataset has the columns PassengerId(range from 1 to 891),Survived(range from 0 to 1),Pclass(range from 1 to 3),Name,Sex,Age(range from 0 to 80 , contains nan),SibSp,Parch,Ticket,Fare,Cabin(contains nan),Embarked(contains nan) : what data cleaning should be taken foreach column   "
-
-#     response = openai.chat.completions.create(
-#         model="gpt-4o",
-#         messages=[
-#             {"role": "system", "content": "You are a data scientist"},
-#             {"role": "user", "content": f"{prompt}:Without any comment, return the result in the following JSON format {{column: from these setps select one or more also if imputing tell the strategy [dropna,impute:mean/median/most_frequent,encoding_categorical_data,drop_duplicaes,drop_column,outlier_removing  ]}}"  }
-#         ]
-#     )
-#     advice = response.choices[0].message.content
-#     print(advice)
-#     # return advice
-# get_travel_advice()
