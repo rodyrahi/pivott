@@ -6,7 +6,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
+
 import json
+from dataframeinfo import *
 from dataframe_table import *
 from dataframe_widget import *
 from feature_widgets import *
@@ -283,6 +285,11 @@ class TwoColumnWindow(QWidget):
         auto_button.clicked.connect(self.automate_with_ai)
         self.column0Layout.addWidget(auto_button)
 
+        
+
+
+        
+
 
     def automate_with_ai(self):
         # Create a new window
@@ -351,6 +358,21 @@ class TwoColumnWindow(QWidget):
 
         self.df_widget = tableWidget(self.df.dataframe)
         export_button = Button('Export to CSV')
+
+
+
+
+        popup_button = Button('Dataframe Info')
+        infodf = dataframeinfo(self.df.dataframe , parent=self)
+        popup_button.clicked.connect(lambda: infodf.show())
+        self.column2Layout.addWidget(popup_button)
+
+        
+        
+
+        
+
+        
 
         self.column2Layout.addWidget(self.df_widget)
         self.column2Layout.addWidget(export_button)

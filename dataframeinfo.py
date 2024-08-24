@@ -1,18 +1,16 @@
 import sys
-import os
-
-import qdarkstyle
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import pandas as pd
 
 class dataframeinfo(QWidget):
-    def __init__(self, df):
+    def __init__(self, df , parent=None):
         super().__init__()
         self.df = df
         self.info = {}
         self.initui()
+  
 
     def initui(self):
         self.get_info()
@@ -33,6 +31,7 @@ class dataframeinfo(QWidget):
         
         self.setWindowTitle("DataFrame Info")
         self.setGeometry(100, 100, 800, 600)
+        # Remove the self.show() call from here
 
     def get_info(self):
         self.info = {
@@ -107,16 +106,15 @@ class dataframeinfo(QWidget):
             tab_layout.addWidget(group_box)
         
         tab.setLayout(tab_layout)
-        return tab
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
+        return tab# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
 
 
 
-    window = dataframeinfo(pd.read_csv('test.csv'))
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    window.show()
-    sys.exit(app.exec_())
+#     window = dataframeinfo(pd.read_csv('test.csv'))
+#     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+#     window.show()
+#     sys.exit(app.exec_())
 
 
 
