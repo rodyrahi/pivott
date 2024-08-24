@@ -228,12 +228,19 @@ class TwoColumnWindow(QWidget):
         self.remove_all_widgets(self.featurescolumnLayout)
         self.remove_all_widgets(self.filecolumnLayout)
 
+        popup_button = Button('Dataframe Info')
+        infodf = dataframeinfo(self.df.dataframe , parent=self)
+        popup_button.clicked.connect(lambda: infodf.show())
+        self.featurescolumnLayout.addWidget(popup_button)
+
+
 
         select_button = Button('Select Source')
         select_button.clicked.connect(self.set_df)
         self.featurescolumnLayout.addWidget(select_button)
 
-        # self.featurescolumnLayout.addWidget(QCheckBox('Drop Duplicates'))
+
+       
 
         self.drop_duplicate_checkbox = popCheckBox('Drop Duplicates' , parent=self , widget=featureWidget  )
         self.drop_duplicate_checkbox.widget.dropduplicateUI()
@@ -362,10 +369,6 @@ class TwoColumnWindow(QWidget):
 
 
 
-        popup_button = Button('Dataframe Info')
-        infodf = dataframeinfo(self.df.dataframe , parent=self)
-        popup_button.clicked.connect(lambda: infodf.show())
-        self.column2Layout.addWidget(popup_button)
 
         
         
