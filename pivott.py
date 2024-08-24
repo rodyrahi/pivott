@@ -408,15 +408,15 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
 
-    window = TwoColumnWindow()
-    # isupdate = get_update(version=VERSION).update()
-    # print(isupdate)
-    # if get_update(version={"version":VERSION}).update()["update"] == "yes":
+    # window = TwoColumnWindow()
+    isupdate = get_update(version=VERSION).update()
+    print(isupdate)
+    if get_update(version={"version":VERSION}).update()["update"] == "yes":
 
 
-    #     window = UpdateDialog()
-    # else:
-    #     window = TwoColumnWindow()
+        window = UpdateDialog()
+    else:
+        window = TwoColumnWindow()
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     window.show()
     sys.exit(app.exec_())

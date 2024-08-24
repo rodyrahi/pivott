@@ -1,1 +1,1 @@
-{"data_path": "test.csv"}
+{"data_path": "test.csv", "encode": {"col": ["Sex"]}, "dropcol": {"col": ["Pclass"]}}
