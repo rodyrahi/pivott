@@ -345,6 +345,7 @@ class featureWidget(QWidget):
             try:
                 if not column in jsonfile["outlier"]["col"]:
                     jsonfile["outlier"]["col"].append(column)
+                    jsonfile["outlier"]["method"].append(list)
             except:
                 jsonfile["outlier"] = {"col":[column], "method":[list]}
             self.Write_json(jsonfile)
@@ -376,6 +377,7 @@ class featureWidget(QWidget):
                 index = jsonfile["outlier"]["col"].index(column)
 
                 jsonfile["outlier"]["col"].remove(column)
+                print(index)
                 del jsonfile["outlier"]["method"][index]
 
                 self.Write_json(jsonfile)
@@ -391,22 +393,38 @@ class featureWidget(QWidget):
         self.df.dataframe = self.df.dataframe.drop(outliers.index)
     
     def drop_duplicate_all(self , state , checkbox ,column):
+
+
         if checkbox.isChecked():
             jsonfile = self.read_json()
             try:
-                if not col in jsonfile["dropduplicates"]["col"]:
-                    jsonfile["dropduplicates"]["col"].append(col)
+                if not column in jsonfile["dropduplicates"]["col"]:
+                    jsonfile["dropduplicates"]["col"].append(column)
             except:
                 jsonfile["dropduplicates"] = {"col":[column]}
             self.Write_json(jsonfile)
 
             if checkbox.save_unchecked(self.parent , self.df , column , 'dropduplicates'):
-            
+        
                 self.drop_duplicates()
 
                 # self.parent.df.dataframe = self.df.dataframe
-                self.parent.df.dataframe[column] = self.df.dataframe[column]
+                self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
+
+        else:
+            col = inArray(self.parent.unchecked, column+'dropduplicates')
+            if col:
+
+                self.df.dataframe= col[1]
+                self.parent.df.dataframe = self.df.dataframe
+                self.parent.create_table()
+
+
+                jsonfile = self.read_json()
+                jsonfile["dropduplicates"]["col"].remove(column)
+                self.Write_json(jsonfile)
+
     
     def drop_duplicates(self):
-        self.df.dataframe = self.parent.df.dataframe.drop_duplicate()
+        self.df.dataframe = self.parent.df.dataframe.drop_duplicates()

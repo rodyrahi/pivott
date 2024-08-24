@@ -213,6 +213,7 @@ class TwoColumnWindow(QWidget):
                             if k.label.text() == col:
                                 k.checked()
                                 # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
+                                print(index)
                                 k.func( state = True, checkbox=k.checkbox , list=list_method[index] , column=col )
 
 
