@@ -1,1 +1,1 @@
-{"data_path": "test.csv", "encode": {"col": ["Sex"]}, "dropcol": {"col": ["Pclass"]}, "outlier": {"col": [], "method": []}, "dropduplicates": {"col": ["All"]}}
+{"data_path": "test.csv", "encode": {"col": ["Sex"]}, "dropcol": {"col": ["Pclass"]}, "outlier": {"col": [], "method": []}, "dropduplicates": {"col": ["All"]}, "dropna": {"col": ["Age"]}}

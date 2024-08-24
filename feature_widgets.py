@@ -356,20 +356,25 @@ class featureWidget(QWidget):
                     self.outlier_IQR(column)
 
                     # self.parent.df.dataframe = self.df.dataframe
+
                     self.parent.df.dataframe[column] = self.df.dataframe[column]
                     self.parent.create_table()
             
         else:
-            print("test")
+            
             col = inArray(self.parent.unchecked, column+'outlier')
             if col:
                 
+              
                 diff = col[1][~col[1].index.isin(self.df.dataframe.index )]
                 print(diff) 
                 self.df.dataframe = pd.concat( [self.df.dataframe, diff], ignore_index=True)
 
                 self.parent.df.dataframe = self.df.dataframe
                 self.parent.create_table()
+
+
+
 
 
                 jsonfile = self.read_json()
@@ -390,6 +395,7 @@ class featureWidget(QWidget):
         lower_bound = q1 - (1.5 * iqr)
         upper_bound = q3 + (1.5 * iqr)
         outliers = self.df.dataframe[(self.df.dataframe[col] < lower_bound) | (self.df.dataframe[col] > upper_bound)]
+        print(outliers)
         self.df.dataframe = self.df.dataframe.drop(outliers.index)
     
     def drop_duplicate_all(self , state , checkbox ,column):
