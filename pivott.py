@@ -19,10 +19,19 @@ from api import *
 
 
 
-global VERSION
-VERSION = 0.001
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
 
-print("Version :" ,VERSION)
+global VERSION
+VERSION = config['VERSION'] = '0.002'
+
+with open('config.json', 'w') as config_file:
+    json.dump(config, config_file, indent=4)
+
+
+
+
+print("Version:", VERSION)
 
 
 
