@@ -13,7 +13,7 @@ with open('config.json', 'r') as config_file:
 print(version)
 
 # Define file paths and server details
-local_file_path = r'C:\Users\Raj\Desktop\raj.txt'
+local_file_path = r'C:\Users\Raj\Desktop\pivott\dist\pivott.exe'
 remote_file_path = '/root/app/api_pivott/static/'
 remote_server = 'root@165.232.151.6'
 
@@ -36,3 +36,4 @@ response = requests.post(url, headers=headers, json=data)
 # Print the response status code and content
 print(f"Response Status Code: {response.status_code}")
 print(f"Response Content: {response.text}")
+# pyinstaller.exe --icon=test.ico -F --noconsole test.py

@@ -18,15 +18,26 @@ from api import *
 
 
 
+try:
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+except FileNotFoundError:
+    config = None
 
-with open('config.json', 'r') as config_file:
-    config = json.load(config_file)
+
+
 
 global VERSION
-VERSION = config['VERSION'] = '0.002'
 
-with open('config.json', 'w') as config_file:
-    json.dump(config, config_file, indent=4)
+code = 0.002
+
+if config:
+    VERSION = config['VERSION'] = code
+    with open('config.json', 'w') as config_file:
+        json.dump(config, config_file, indent=4)
+else:
+    VERSION = code
+
 
 
 
