@@ -176,143 +176,219 @@ class TwoColumnWindow(QWidget):
             self.select_source(jsonfile)
 
 
-    def select_source(self , jsonfile):
+    # def select_source(self , jsonfile):
+    #     print(jsonfile)
+    #     data_path = jsonfile["data_path"]
+    #     self.df = dataframe(data_path)
+
+    #     self.create_df_widgets()
+    #     self.create_table()
+        
+    #     for i in jsonfile.items():
+
+    #         if i[0] == 'impute':
+    #             list_col = list(i[1]["col"])
+    #             list_strategy = list(i[1]["strategy"])
+
+    #             for k in self.impute_checkboxes:
+                    
+    #                 for index,col in enumerate(list_col):
+    #                     if k.label.text() == col:
+    #                         k.checked()
+    #                         k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_strategy[index])
+            
+    #         if i[0] == 'encode':
+    #             list_col = list(i[1]["col"])
+
+    #             for k in self.encode_checkboxes:
+    #                 for col in list_col:
+    #                     if k.label.text() ==col:
+    #                         k.checked()
+    #                         k.func( state = True, checkbox=k.checkbox , column=col)
+
+    #         if i[0] == 'dropna':
+    #             list_col = list(i[1]["col"])
+
+    #             for k in self.dropna_checkboxes:
+    #                 for col in list_col:
+    #                     if k.label.text() ==col:
+    #                         k.checked()
+    #                         k.func( state = True, checkbox=k.checkbox , column=col)
+            
+    #         if i[0] == 'dropcol':
+    #             list_col = list(i[1]["col"])
+
+    #             for k in self.dropcol_checkboxes:
+    #                 for col in list_col:
+    #                     if k.label.text() ==col:
+    #                         k.checked()
+    #                         k.func( state = True, checkbox=k.checkbox , column=col)
+
+    #         if i[0] == 'outlier':
+                
+    #                 list_col = list(i[1]["col"])
+    #                 list_method = list(i[1]["method"])
+
+    #                 for k in self.outlier_checkboxes:
+                        
+    #                     for index,col in enumerate(list_col):
+    #                         if k.label.text() == col:
+    #                             k.checked()
+    #                             # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
+    #                             print(index)
+    #                             k.func( state = True, checkbox=k.checkbox , list=list_method[index] , column=col )
+
+
+    def select_source(self, jsonfile):
         print(jsonfile)
         data_path = jsonfile["data_path"]
         self.df = dataframe(data_path)
 
         self.create_df_widgets()
         self.create_table()
-        
-        for i in jsonfile.items():
 
-            if i[0] == 'impute':
-                list_col = list(i[1]["col"])
-                list_strategy = list(i[1]["strategy"])
+        # Mapping action keys to corresponding checkbox attributes
+        action_mapping = {
+            'impute': ('impute_checkboxes', 'strategy'),
+            'encode': ('encode_checkboxes', None),
+            'dropna': ('dropna_checkboxes', None),
+            'dropcol': ('dropcol_checkboxes', None),
+            'outlier': ('outlier_checkboxes', 'method')
+        }
 
-                for k in self.impute_checkboxes:
-                    
-                    for index,col in enumerate(list_col):
+        for action, params in jsonfile.items():
+            if action in action_mapping:
+                checkbox_attr, strategy_key = action_mapping[action]
+                list_col = list(params["col"])
+                list_strategy = list(params[strategy_key]) if strategy_key else None
+
+                for k in getattr(self, checkbox_attr):
+                    for index, col in enumerate(list_col):
                         if k.label.text() == col:
                             k.checked()
-                            k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_strategy[index])
-            
-            if i[0] == 'encode':
-                list_col = list(i[1]["col"])
-
-                for k in self.encode_checkboxes:
-                    for col in list_col:
-                        if k.label.text() ==col:
-                            k.checked()
-                            k.func( state = True, checkbox=k.checkbox , column=col)
-
-            if i[0] == 'dropna':
-                list_col = list(i[1]["col"])
-
-                for k in self.dropna_checkboxes:
-                    for col in list_col:
-                        if k.label.text() ==col:
-                            k.checked()
-                            k.func( state = True, checkbox=k.checkbox , column=col)
-            
-            if i[0] == 'dropcol':
-                list_col = list(i[1]["col"])
-
-                for k in self.dropcol_checkboxes:
-                    for col in list_col:
-                        if k.label.text() ==col:
-                            k.checked()
-                            k.func( state = True, checkbox=k.checkbox , column=col)
-
-            if i[0] == 'outlier':
-                
-                    list_col = list(i[1]["col"])
-                    list_method = list(i[1]["method"])
-
-                    for k in self.outlier_checkboxes:
-                        
-                        for index,col in enumerate(list_col):
-                            if k.label.text() == col:
-                                k.checked()
-                                # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
-                                print(index)
-                                k.func( state = True, checkbox=k.checkbox , list=list_method[index] , column=col )
-
-
+                            kwargs = {
+                                "state": True,
+                                "checkbox": k.checkbox,
+                                "column": col
+                            }
+                            if list_strategy:
+                                kwargs[strategy_key] = list_strategy[index]
+                            k.func(**kwargs)
 
             
+        
+    # def create_df_widgets(self):
+    #     self.scroll_area.show()
+    #     # self.remove_all_widgets(self.column0Layout)
+    #     self.remove_all_widgets(self.featurescolumnLayout)
+    #     self.remove_all_widgets(self.filecolumnLayout)
+
+    #     popup_button = Button('Dataframe Info')
+    #     infodf = dataframeinfo(self.df.dataframe , parent=self)
+    #     popup_button.clicked.connect(lambda: infodf.show())
+    #     self.featurescolumnLayout.addWidget(popup_button)
+
+
+
+    #     select_button = Button('Select Source')
+    #     select_button.clicked.connect(self.set_df)
+    #     self.featurescolumnLayout.addWidget(select_button)
+
+
+       
+
+    #     self.drop_duplicate_checkbox = popCheckBox('Drop Duplicates' , parent=self , widget=featureWidget  )
+    #     self.drop_duplicate_checkbox.widget.dropduplicateUI()
+    #     self.featurescolumnLayout.addWidget(self.drop_duplicate_checkbox.cb)
+    #     self.drop_duplicate_checkbox.cb.stateChanged.connect(lambda:self.drop_duplicate_checkbox.visbility())
+
+
+    #     self.drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=featureWidget  )
+    #     self.drop_nan_checkbox.widget.dropnaUI()
+    #     self.featurescolumnLayout.addWidget(self.drop_nan_checkbox.cb)
+    #     self.drop_nan_checkbox.cb.stateChanged.connect(lambda:self.drop_nan_checkbox.visbility())
+
+        
+        
+       
+    #     self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=featureWidget)
+    #     self.impute_checkbox.widget.imputeUI()
+    #     self.featurescolumnLayout.addWidget(self.impute_checkbox.cb)
+    #     self.impute_checkbox.cb.stateChanged.connect(lambda:self.impute_checkbox.visbility())
+
+
+
+    #     self.outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
+    #     self.outlier_checkbox.widget.outlierUI()
+    #     self.featurescolumnLayout.addWidget(self.outlier_checkbox.cb)
+    #     self.outlier_checkbox.cb.stateChanged.connect(lambda:self.outlier_checkbox.visbility())
+
+        
+    #     encoding_checkbox = popCheckBox('Encoding Categorical' , parent=self , widget=featureWidget )
+    #     encoding_checkbox.widget.encodeUI()
+    #     self.featurescolumnLayout.addWidget(encoding_checkbox.cb)
+    #     encoding_checkbox.cb.stateChanged.connect(lambda:encoding_checkbox.visbility())
+
+    #     dropcol_checkbox = popCheckBox('Drop Columns' , parent=self , widget=featureWidget )
+    #     dropcol_checkbox.widget.dropcolUI()
+    #     self.featurescolumnLayout.addWidget(dropcol_checkbox.cb)
+    #     dropcol_checkbox.cb.stateChanged.connect(lambda:dropcol_checkbox.visbility())
+
+
+    #     # Create an empty QTableWidget
+    #     self.empty_table = QTableWidget()
+    #     self.empty_table.setRowCount(0)
+    #     self.empty_table.setColumnCount(0)
+        
+        
+    #     # Add the empty table to column2Layout
+    #     self.column2Layout.addWidget(self.empty_table)
+    #     auto_button = Button('Automate with AI')
+    #     auto_button.clicked.connect(self.automate_with_ai)
+    #     self.column0Layout.addWidget(auto_button)
+
         
     def create_df_widgets(self):
         self.scroll_area.show()
-        # self.remove_all_widgets(self.column0Layout)
         self.remove_all_widgets(self.featurescolumnLayout)
         self.remove_all_widgets(self.filecolumnLayout)
 
+        # Create and add the "Dataframe Info" button
         popup_button = Button('Dataframe Info')
-        infodf = dataframeinfo(self.df.dataframe , parent=self)
+        infodf = dataframeinfo(self.df.dataframe, parent=self)
         popup_button.clicked.connect(lambda: infodf.show())
         self.featurescolumnLayout.addWidget(popup_button)
 
-
-
+        # Create and add the "Select Source" button
         select_button = Button('Select Source')
         select_button.clicked.connect(self.set_df)
         self.featurescolumnLayout.addWidget(select_button)
 
+        # List of checkbox configurations (label, UI method)
+        checkbox_configs = [
+            ('Drop Duplicates', 'dropduplicateUI'),
+            ('Drop Missing Values', 'dropnaUI'),
+            ('Impute Missing Values', 'imputeUI'),
+            ('Outlier Removing', 'outlierUI'),
+            ('Encoding Categorical', 'encodeUI'),
+            ('Drop Columns', 'dropcolUI')
+        ]
 
-       
+        # Create checkboxes dynamically based on the configurations
+        for label, ui_method in checkbox_configs:
+            checkbox = popCheckBox(label, parent=self, widget=featureWidget)
+            getattr(checkbox.widget, ui_method)()  # Call the UI method dynamically
+            self.featurescolumnLayout.addWidget(checkbox.cb)
+            checkbox.cb.stateChanged.connect(lambda _, cb=checkbox: cb.visbility())
 
-        self.drop_duplicate_checkbox = popCheckBox('Drop Duplicates' , parent=self , widget=featureWidget  )
-        self.drop_duplicate_checkbox.widget.dropduplicateUI()
-        self.featurescolumnLayout.addWidget(self.drop_duplicate_checkbox.cb)
-        self.drop_duplicate_checkbox.cb.stateChanged.connect(lambda:self.drop_duplicate_checkbox.visbility())
-
-
-        self.drop_nan_checkbox = popCheckBox('Drop Missing Values' , parent=self , widget=featureWidget  )
-        self.drop_nan_checkbox.widget.dropnaUI()
-        self.featurescolumnLayout.addWidget(self.drop_nan_checkbox.cb)
-        self.drop_nan_checkbox.cb.stateChanged.connect(lambda:self.drop_nan_checkbox.visbility())
-
-        
-        
-       
-        self.impute_checkbox = popCheckBox('Impute Missing Values' , parent=self , widget=featureWidget)
-        self.impute_checkbox.widget.imputeUI()
-        self.featurescolumnLayout.addWidget(self.impute_checkbox.cb)
-        self.impute_checkbox.cb.stateChanged.connect(lambda:self.impute_checkbox.visbility())
-
-
-
-        self.outlier_checkbox = popCheckBox('Outlier Removing' , parent=self , widget=featureWidget )
-        self.outlier_checkbox.widget.outlierUI()
-        self.featurescolumnLayout.addWidget(self.outlier_checkbox.cb)
-        self.outlier_checkbox.cb.stateChanged.connect(lambda:self.outlier_checkbox.visbility())
-
-        
-        encoding_checkbox = popCheckBox('Encoding Categorical' , parent=self , widget=featureWidget )
-        encoding_checkbox.widget.encodeUI()
-        self.featurescolumnLayout.addWidget(encoding_checkbox.cb)
-        encoding_checkbox.cb.stateChanged.connect(lambda:encoding_checkbox.visbility())
-
-        dropcol_checkbox = popCheckBox('Drop Columns' , parent=self , widget=featureWidget )
-        dropcol_checkbox.widget.dropcolUI()
-        self.featurescolumnLayout.addWidget(dropcol_checkbox.cb)
-        dropcol_checkbox.cb.stateChanged.connect(lambda:dropcol_checkbox.visbility())
-
-
-        # Create an empty QTableWidget
-        self.empty_table = QTableWidget()
-        self.empty_table.setRowCount(0)
-        self.empty_table.setColumnCount(0)
-        
-        
-        # Add the empty table to column2Layout
+        # Create and add an empty QTableWidget
+        self.empty_table = QTableWidget(0, 0)
         self.column2Layout.addWidget(self.empty_table)
+
+        # Create and add the "Automate with AI" button
         auto_button = Button('Automate with AI')
         auto_button.clicked.connect(self.automate_with_ai)
         self.column0Layout.addWidget(auto_button)
-
-        
 
 
         
