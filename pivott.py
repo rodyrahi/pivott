@@ -93,6 +93,7 @@ class TwoColumnWindow(QWidget):
 
         
         
+        
         open_project = MainButton('Open Project')
         open_project.clicked.connect(self.open_project)
         self.filecolumnLayout.addWidget(open_project)
