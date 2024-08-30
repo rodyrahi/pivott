@@ -1,1 +1,1 @@
-{"data_path": "C:/Users/Raj/Desktop/pivott/test.csv", "encode": {"col": []}, "dropcol": {"col": ["Pclass"]}, "outlier": {"col": ["Age"], "method": ["IQR"]}, "dropduplicates": {"col": []}, "dropna": {"col": ["Age"]}, "impute": {"col": ["Cabin"], "strategy": ["most_frequent"]}}
+{"data_path": "test.csv", "impute": {"col": ["Age"], "strategy": ["mean"]}, "outlier": {"col": ["Age"], "method": ["IQR"]}, "encode": {"col": ["Sex"]}}

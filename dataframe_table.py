@@ -1,7 +1,7 @@
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
 
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -117,7 +117,7 @@ class tableWidget(QWidget):
         context_menu.addAction(unique_action)
 
         # Show the context menu at the cursor position
-        context_menu.exec_(QCursor.pos())
+        context_menu.exec(QCursor.pos())
 
     def filter_table(self, column_name, value, state):
         for row in range(self.tableWidget.rowCount()):

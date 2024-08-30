@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
 import pandas as pd
 
 class dataframeinfo(QWidget):
@@ -112,7 +112,7 @@ class dataframeinfo(QWidget):
 
 
 #     window = dataframeinfo(pd.read_csv('test.csv'))
-#     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+#     app.setStyleSheet(qdarkstyle.load_stylesheet_PyQt6())
 #     window.show()
 #     sys.exit(app.exec_())
 

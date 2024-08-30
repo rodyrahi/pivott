@@ -1,3 +1,4 @@
+.conda
 .venv
 .env
 .update_pivott.py

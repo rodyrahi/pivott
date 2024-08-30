@@ -2,9 +2,9 @@ import sys
 import os
 # from PySide2 import QtWidgets
 import qdarkstyle
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
 
 
 import json
@@ -118,12 +118,13 @@ class TwoColumnWindow(QWidget):
         
         image.setFixedSize(500 , 500)
         
-        self.filecolumnLayout.setAlignment(Qt.AlignCenter)
-        self.column0Layout.setAlignment(Qt.AlignRight)
-        self.column1Layout.setAlignment(Qt.AlignTop)
-        self.column2Layout.setAlignment(Qt.AlignLeft)
+        self.filecolumnLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+       
+        self.column1Layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.column0Layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.column2Layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-
+    
         
         # Add columns to the main layout
         self.mainLayout.addLayout(self.column0Layout)
@@ -144,7 +145,7 @@ class TwoColumnWindow(QWidget):
         
         self.column0Layout.addLayout(self.filecolumnLayout)
         self.column0Layout.addLayout(self.featurescolumnLayout)
-        self.featurescolumnLayout.setAlignment(Qt.AlignTop)
+        self.featurescolumnLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         
 
@@ -177,104 +178,104 @@ class TwoColumnWindow(QWidget):
             self.select_source(jsonfile)
 
 
-    # def select_source(self , jsonfile):
-    #     print(jsonfile)
-    #     data_path = jsonfile["data_path"]
-    #     self.df = dataframe(data_path)
-
-    #     self.create_df_widgets()
-    #     self.create_table()
-        
-    #     for i in jsonfile.items():
-
-    #         if i[0] == 'impute':
-    #             list_col = list(i[1]["col"])
-    #             list_strategy = list(i[1]["strategy"])
-
-    #             for k in self.impute_checkboxes:
-                    
-    #                 for index,col in enumerate(list_col):
-    #                     if k.label.text() == col:
-    #                         k.checked()
-    #                         k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_strategy[index])
-            
-    #         if i[0] == 'encode':
-    #             list_col = list(i[1]["col"])
-
-    #             for k in self.encode_checkboxes:
-    #                 for col in list_col:
-    #                     if k.label.text() ==col:
-    #                         k.checked()
-    #                         k.func( state = True, checkbox=k.checkbox , column=col)
-
-    #         if i[0] == 'dropna':
-    #             list_col = list(i[1]["col"])
-
-    #             for k in self.dropna_checkboxes:
-    #                 for col in list_col:
-    #                     if k.label.text() ==col:
-    #                         k.checked()
-    #                         k.func( state = True, checkbox=k.checkbox , column=col)
-            
-    #         if i[0] == 'dropcol':
-    #             list_col = list(i[1]["col"])
-
-    #             for k in self.dropcol_checkboxes:
-    #                 for col in list_col:
-    #                     if k.label.text() ==col:
-    #                         k.checked()
-    #                         k.func( state = True, checkbox=k.checkbox , column=col)
-
-    #         if i[0] == 'outlier':
-                
-    #                 list_col = list(i[1]["col"])
-    #                 list_method = list(i[1]["method"])
-
-    #                 for k in self.outlier_checkboxes:
-                        
-    #                     for index,col in enumerate(list_col):
-    #                         if k.label.text() == col:
-    #                             k.checked()
-    #                             # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
-    #                             print(index)
-    #                             k.func( state = True, checkbox=k.checkbox , list=list_method[index] , column=col )
-
-
-    def select_source(self, jsonfile):
+    def select_source(self , jsonfile):
         print(jsonfile)
         data_path = jsonfile["data_path"]
         self.df = dataframe(data_path)
 
         self.create_df_widgets()
         self.create_table()
+        
+        for i in jsonfile.items():
 
-        # Mapping action keys to corresponding checkbox attributes
-        action_mapping = {
-            'impute': ('impute_checkboxes', 'strategy'),
-            'encode': ('encode_checkboxes', None),
-            'dropna': ('dropna_checkboxes', None),
-            'dropcol': ('dropcol_checkboxes', None),
-            'outlier': ('outlier_checkboxes', 'method')
-        }
+            if i[0] == 'impute':
+                list_col = list(i[1]["col"])
+                list_strategy = list(i[1]["strategy"])
 
-        for action, params in jsonfile.items():
-            if action in action_mapping:
-                checkbox_attr, strategy_key = action_mapping[action]
-                list_col = list(params["col"])
-                list_strategy = list(params[strategy_key]) if strategy_key else None
-
-                for k in getattr(self, checkbox_attr):
-                    for index, col in enumerate(list_col):
+                for k in self.impute_checkboxes:
+                    
+                    for index,col in enumerate(list_col):
                         if k.label.text() == col:
                             k.checked()
-                            kwargs = {
-                                "state": True,
-                                "checkbox": k.checkbox,
-                                "column": col
-                            }
-                            if list_strategy:
-                                kwargs[strategy_key] = list_strategy[index]
-                            k.func(**kwargs)
+                            k.func( state = True, checkbox=k.checkbox , column=col , strategy=list_strategy[index])
+            
+            if i[0] == 'encode':
+                list_col = list(i[1]["col"])
+
+                for k in self.encode_checkboxes:
+                    for col in list_col:
+                        if k.label.text() ==col:
+                            k.checked()
+                            k.func( state = True, checkbox=k.checkbox , column=col)
+
+            if i[0] == 'dropna':
+                list_col = list(i[1]["col"])
+
+                for k in self.dropna_checkboxes:
+                    for col in list_col:
+                        if k.label.text() ==col:
+                            k.checked()
+                            k.func( state = True, checkbox=k.checkbox , column=col)
+            
+            if i[0] == 'dropcol':
+                list_col = list(i[1]["col"])
+
+                for k in self.dropcol_checkboxes:
+                    for col in list_col:
+                        if k.label.text() ==col:
+                            k.checked()
+                            k.func( state = True, checkbox=k.checkbox , column=col)
+
+            if i[0] == 'outlier':
+                
+                    list_col = list(i[1]["col"])
+                    list_method = list(i[1]["method"])
+
+                    for k in self.outlier_checkboxes:
+                        
+                        for index,col in enumerate(list_col):
+                            if k.label.text() == col:
+                                k.checked()
+                                # state , checkbox=outliercol.checkbox,list = outliercol.method ,col=column 
+                                print(index)
+                                k.func( state = True, checkbox=k.checkbox , list=list_method[index] , column=col )
+
+
+    # def select_source(self, jsonfile):
+    #     print(jsonfile)
+    #     data_path = jsonfile["data_path"]
+    #     self.df = dataframe(data_path)
+
+    #     self.create_df_widgets()
+    #     self.create_table()
+
+    #     # Mapping action keys to corresponding checkbox attributes
+    #     action_mapping = {
+    #         'impute': ('impute_checkboxes', 'strategy'),
+    #         'encode': ('encode_checkboxes', None),
+    #         'dropna': ('dropna_checkboxes', None),
+    #         'dropcol': ('dropcol_checkboxes', None),
+    #         'outlier': ('outlier_checkboxes', 'method')
+    #     }
+
+    #     for action, params in jsonfile.items():
+    #         if action in action_mapping:
+    #             checkbox_attr, strategy_key = action_mapping[action]
+    #             list_col = list(params["col"])
+    #             list_strategy = list(params[strategy_key]) if strategy_key else None
+
+    #             for k in getattr(self, checkbox_attr):
+    #                 for index, col in enumerate(list_col):
+    #                     if k.label.text() == col:
+    #                         k.checked()
+    #                         kwargs = {
+    #                             "state": True,
+    #                             "checkbox": k.checkbox,
+    #                             "column": col
+    #                         }
+    #                         if list_strategy:
+    #                             kwargs[strategy_key] = list_strategy[index]
+    #                         k.func(**kwargs)
 
             
         
@@ -520,9 +521,10 @@ class UpdateDialog(QDialog):
         self.setLayout(layout)
 
     def perform_update(self):
+        
         import webbrowser
         webbrowser.open("https://pivott.click")
-        # QMessageBox.information(self, "Update", "Update page opened in your browser.")
+        QMessageBox.information(self, "Update", "Update page opened in your browser.")
     def show_update_message(self):
         self.exec_()
 
@@ -540,7 +542,7 @@ if __name__ == '__main__':
         window = UpdateDialog()
     else:
         window = TwoColumnWindow()
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
     window.show()
     sys.exit(app.exec_())
 

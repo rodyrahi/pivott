@@ -1,5 +1,4 @@
 altgraph==0.17.4
-auto-py-to-exe==2.44.1
 bottle==0.12.25
 bottle-websocket==0.2.9
 certifi==2024.7.4
@@ -17,7 +16,9 @@ idna==3.7
 joblib==1.4.2
 kiwisolver==1.4.5
 matplotlib==3.9.2
+Nuitka==2.4.8
 numpy==2.1.0
+ordered-set==4.1.0
 packaging==24.1
 pandas==2.2.2
 pefile==2023.2.7
@@ -26,9 +27,9 @@ pycparser==2.22
 pyinstaller==6.10.0
 pyinstaller-hooks-contrib==2024.8
 pyparsing==3.1.2
-PyQt5==5.15.11
-PyQt5-Qt5==5.15.2
-PyQt5_sip==12.15.0
+PyQt6==6.7.1
+PyQt6-Qt6==6.7.2
+PyQt6_sip==13.8.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
@@ -46,3 +47,4 @@ urllib3==2.2.2
 whichcraft==0.6.1
 zope.event==5.0
 zope.interface==7.0.1
+zstandard==0.23.0
