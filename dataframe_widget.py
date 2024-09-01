@@ -8,7 +8,12 @@ class dataframe(pd.DataFrame):
         self.dataframe = self.file_to_dataframe()
         
     def file_to_dataframe(self):
-        return pd.read_csv(self.file)
+
+        try:
+            return pd.read_csv(self.file)
+        except:
+            return pd.read_excel(self.file)
+
     
         
     
