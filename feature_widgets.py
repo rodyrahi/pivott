@@ -1,5 +1,7 @@
-from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
+
 import json
 from custom_widgets import *
 from sklearn.impute import SimpleImputer
@@ -47,8 +49,8 @@ class featureWidget(QWidget):
 
         self.main_layout.addWidget(scroll_area)
         scroll_area.setAcceptDrops(True)
-        self.setMaximumSize(350, 300)
-        self.setMinimumSize(350, 200)
+        # self.setMaximumSize(350, 300)
+        # self.setMinimumSize(350, 200)
         self.setAcceptDrops(True)
         
         self.setLayout(self.main_layout)

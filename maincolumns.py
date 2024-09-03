@@ -26,7 +26,7 @@ except FileNotFoundError:
 
 global VERSION
 
-code = 0.002
+code = 0.003
 
 if config:
     VERSION = config['VERSION'] = code
@@ -140,25 +140,26 @@ class TwoColumnWindow(QWidget):
         # Create the main layout
 
         
-        open_project = MainButton('Open Project')
-        open_project.clicked.connect(self.open_project)
-        self.column2Layout.addWidget(open_project)
+        self.open_project_btn = MainButton('Open Project')
+        self.open_project_btn.clicked.connect(self.open_project)
+        self.column2Layout.addWidget(self.open_project_btn)
         
 
-        new_project_button = MainButton('New Project')
-        new_project_button.clicked.connect(self.create_project)
+        self.new_project_button = MainButton('New Project')
+        self.new_project_button.clicked.connect(self.create_project)
 
-        self.column2Layout.addWidget(new_project_button)
+        self.column2Layout.addWidget(self.new_project_button)
 
 
-        select_button = MainButton('Select Source')
-        select_button.clicked.connect(self.set_df)
-        self.column2Layout.addWidget(select_button)
+
 
         
 
         image = QLabel(pixmap=QPixmap('logo.png'))
         self.filecolumnLayout.addWidget(image)
+
+        version_label = QLabel(f"Version: {self.version}")
+        self.filecolumnLayout.addWidget(version_label)
 
         self.column1Layout.setSpacing(20)   
         
@@ -212,7 +213,25 @@ class TwoColumnWindow(QWidget):
             project_name = os.path.splitext(os.path.basename(save_location))[0]
             with open(save_location, 'w') as f:
                 json.dump({"data_path":"" , "impute": {"col": [], "strategy": []}, "encode": {"col": []}, "dropna": {"col": []} ,"dropcol": {"col": []} , "outlier": {"col": [] , "method": []}  } , f)
-                        
+            
+
+
+
+            
+            
+
+            self.select_button = MainButton('Select .Csv or .xlsx File')
+            self.select_button.clicked.connect(self.set_df)
+
+
+            self.column2Layout.addWidget(self.select_button)
+
+
+            # project_label = QLabel(f"Project Selected: {project_name}")
+            # self.column2Layout.addWidget(project_label)
+
+            self.open_project_btn.hide()
+            self.new_project_button.hide()                        
 
     def open_project(self):
         project_path, _ = QFileDialog().getOpenFileName(self, "Open Project", "", "JSON Files (*.json)")
@@ -415,23 +434,24 @@ class TwoColumnWindow(QWidget):
         select_button.clicked.connect(self.set_df)
         self.featurescolumnLayout.addWidget(select_button)
 
-        # List of checkbox configurations (label, UI method)
+        # List of checkbox configurations (label, UI method, max size, min size)
         checkbox_configs = [
-            ('Drop Duplicates', 'dropduplicateUI'),
-            ('Drop Missing Values', 'dropnaUI'),
-            ('Impute Missing Values', 'imputeUI'),
-            ('Outlier Removing', 'outlierUI'),
-            ('Encoding Categorical', 'encodeUI'),
-            ('Drop Columns', 'dropcolUI')
+            ('Drop Duplicates', 'dropduplicateUI', QSize(350, 95), QSize(200, 95)),
+            ('Drop Missing Values', 'dropnaUI', QSize(350, 300), QSize(200, 300)),
+            ('Impute Missing Values', 'imputeUI', QSize(350, 300), QSize(200, 300)),
+            ('Outlier Removing', 'outlierUI', QSize(350, 700), QSize(200, 300)),
+            ('Encoding Categorical', 'encodeUI', QSize(350, 300), QSize(200, 300)),
+            ('Drop Columns', 'dropcolUI', QSize(350, 300), QSize(200, 300)),
         ]
 
         # Create checkboxes dynamically based on the configurations
-        for label, ui_method in checkbox_configs:
+        for label, ui_method, max_size, min_size in checkbox_configs:
             checkbox = popCheckBox(label, parent=self, widget=featureWidget)
             getattr(checkbox.widget, ui_method)()  # Call the UI method dynamically
+            checkbox.widget.setMaximumSize(max_size)  # Set maximum size dynamically
+            checkbox.widget.setMinimumSize(min_size)  # Set minimum size dynamically
             self.featurescolumnLayout.addWidget(checkbox.cb)
             checkbox.cb.stateChanged.connect(lambda _, cb=checkbox: cb.visbility())
-
         # Create and add an empty QTableWidget
         self.empty_table = QTableWidget(0, 0)
         self.column2Layout.addWidget(self.empty_table)

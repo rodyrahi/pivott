@@ -1,1 +1,1 @@
-{"data_path": "F:/pivott/pivott/test.csv", "impute": {"col": [], "strategy": []}, "outlier": {"col": ["Age"], "method": ["IQR"]}, "encode": {"col": ["Sex"]}}
+{"data_path": "F:/pivott/pivott/test.csv", "impute": {"col": [], "strategy": []}, "outlier": {"col": [], "method": []}, "encode": {"col": ["Sex"]}, "dropduplicates": {"col": []}, "dropna": {"col": []}, "dropcol": {"col": []}}
