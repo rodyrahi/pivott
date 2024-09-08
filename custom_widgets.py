@@ -21,6 +21,9 @@ class SQCheckBox(QCheckBox):
     def save_unchecked(self , parent , df , column , method):
         column_found = self.inArray(parent.unchecked, column)
         if column_found is None:
+            
+            
+            
             parent.unchecked.append((column+method, df.dataframe.copy()))
             print("unchecked added")
             return True

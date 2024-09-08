@@ -66,7 +66,7 @@ class MenuWidget(QMenuBar):
     def add_file_actions(self, file_menu):
         new_action = QAction("New Project", self)
         open_action = QAction("Open Project", self)
-        save_action = QAction("Save", self)
+        # save_action = QAction("Save", self)
         exit_action = QAction("Exit", self)
 
         new_action.triggered.connect(self.parent.create_project)
@@ -76,7 +76,7 @@ class MenuWidget(QMenuBar):
 
         file_menu.addAction(new_action)
         file_menu.addAction(open_action)
-        file_menu.addAction(save_action)
+        # file_menu.addAction(save_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
@@ -248,6 +248,21 @@ class TwoColumnWindow(QWidget):
         print(jsonfile)
         data_path = jsonfile["data_path"]
         self.df = dataframe(data_path)
+
+        path_to_save = data_path.split("/")[:-1]
+        path_to_save = "/".join(path_to_save)
+
+        if not os.path.exists(f"{path_to_save}/files"):
+            os.makedirs(f"{path_to_save}/files")
+        
+        
+        if not os.path.exists(f"{path_to_save}/files/df.parquet"):
+            pd.DataFrame.to_parquet(self.df.dataframe, f"{path_to_save}/files/df.parquet")
+        else:
+            self.df.dataframe = pd.read_parquet(f"{path_to_save}/files/df.parquet")
+
+        # pd.DataFrame.to_parquet(self.df.dataframe , f"{path_to_save}/files/df.parquet")
+
 
         self.create_df_widgets()
         self.create_table()
@@ -437,8 +452,8 @@ class TwoColumnWindow(QWidget):
         # List of checkbox configurations (label, UI method, max size, min size)
         checkbox_configs = [
             ('Drop Duplicates', 'dropduplicateUI', QSize(350, 95), QSize(200, 95)),
-            ('Drop Missing Values', 'dropnaUI', QSize(350, 300), QSize(200, 300)),
-            ('Impute Missing Values', 'imputeUI', QSize(350, 300), QSize(200, 300)),
+            ('Drop Missing Values', 'dropnaUI', QSize(350, 150), QSize(200, 150)),
+            ('Impute Missing Values', 'imputeUI', QSize(350, 95), QSize(200, 95)),
             ('Outlier Removing', 'outlierUI', QSize(350, 700), QSize(200, 300)),
             ('Encoding Categorical', 'encodeUI', QSize(350, 300), QSize(200, 300)),
             ('Drop Columns', 'dropcolUI', QSize(350, 300), QSize(200, 300)),
@@ -517,6 +532,9 @@ class TwoColumnWindow(QWidget):
             else:
                 self.df = dataframe(file_path)
 
+                print("this")
+                test = pd.DataFrame.to_parquet(self.df.dataframe , "/files/df.parquet")
+                print(test)
                 self.create_df_widgets()
                 self.create_table()
         
@@ -543,6 +561,7 @@ class TwoColumnWindow(QWidget):
         print(file_path)
         if file_path:
             self.df.dataframe.to_csv(file_path + ".csv", index=False)
+
     def remove_all_widgets(self , layout):
         while layout.count():
             child = layout.takeAt(0)
