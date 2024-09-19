@@ -2,6 +2,10 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
+
+
+
+
 class MainButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -67,7 +71,6 @@ class popCheckBox(QWidget):
         except:
             pass
 
-        
         self.widget = self.widget(self.df , parent=self.parent)
         self.widget.hide()
         self.widget.feature_label.setText(self.text)
