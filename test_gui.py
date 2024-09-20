@@ -1,84 +1,21 @@
 
+import json
 import sys
 from PyQt6.QtWidgets import *
-
+import qdarkstyle
 import pandas as pd
 import glob
 import os
-
-from sklearn.impute import SimpleImputer
-
-
-
-
-
-class DataCleaningWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-        
-        self.current_df = ["./test_files/df.parquet"]
-        self.initui()
+from data_cleaning import *
+from project_window import *
+from custom_widgets import MainButton , Button
+# from sklearn.impute import SimpleImputer
 
 
 
-    def initui(self):
-
-        df = pd.read_parquet(self.current_df[-1])
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        
-        self.dropna_checkbox = QCheckBox("Drop NA values")
-        layout.addWidget(self.dropna_checkbox)
-        self.dropna_checkbox.stateChanged.connect(lambda  :self.drop_na(df , self.dropna_checkbox.isChecked()))
-        
 
 
-        self.dropcol_checkbox = QCheckBox("Drop columns")
-        layout.addWidget(self.dropcol_checkbox)
-        
-        self.impute_checkbox = QCheckBox("Impute missing values")
-        layout.addWidget(self.impute_checkbox)
 
-
-    def drop_na(self , df, state , cols=None ):
-
-        if state:
-            
-            if cols:
-                modified_df = df.dropna(subset=cols)
-            else:
-                modified_df = df.dropna()
-
-            self.save_parquet_file(df, "dropna")
-            return modified_df
-        else:
-            self.current_df[:-1]
-
-
-    def drop_col( self ,  df, cols):
-        return df.drop(columns=cols)
-
-    def impute_mising(df, cols, strategy):
-        imputer = SimpleImputer(strategy=strategy)
-        df[cols] = imputer.fit_transform(df[cols])
-        return df
-       
-    def save_parquet_file(self , df, suffix, base_path="./test_files/df.parquet"):
-
-
-        filepath = base_path.replace(".parquet", f"_{suffix}.parquet")
-
-        # Remove the file if it exists
-        if os.path.exists(filepath):
-            os.remove(filepath)
-
-        df.to_parquet(filepath)
-
-
-        # global current_df
-        self.current_df.append(filepath)
-
-        print(f"File saved as {filepath}")
 
 
 
@@ -103,7 +40,7 @@ class FileLoaderWidget(QWidget):
             self.read_save_file(csv_filepath)
     
     def read_save_file(self, csv_filepath, parquet_filepath="./test_files/df.parquet"):
-        try:
+        # try:
             df = pd.read_csv(csv_filepath)
             print("Loading CSV...")
 
@@ -114,12 +51,22 @@ class FileLoaderWidget(QWidget):
             df.to_parquet(parquet_filepath)
             print("CSV loaded and saved as Parquet.")
             self.label.setText(f"File loaded: {csv_filepath}")
-            data_cleaning = DataCleaningWidget()
-            self.parent().layout().addWidget(data_cleaning)
+            self.data_cleaning = DataCleaningWidget()
+            self.parent().layout().addWidget(self.data_cleaning)
+            
+            with open('test_project.json') as f:
+                csv_data = json.load(f)
+                print(csv_data)
 
-        except Exception as e:
-            print(f"Error loading file: {str(e)}")
-            self.label.setText("Error loading file")
+            self.data_cleaning.process_file(csv_filepath=csv_data)
+
+            # self.data_cleaning.drop_na(state=True)
+
+
+        # except Exception as e:
+        #     print(f"Error loading file: {str(e)}")
+        #     self.label.setText("Error loading file")
+    
 
 
 
@@ -128,24 +75,30 @@ class FileLoaderWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PyQt6 GUI")
-        self.setGeometry(100, 100, 300, 200)
 
+        self.project_path = ""
+
+
+        self.setWindowTitle('Two Column Main Window')
+        self.setWindowIcon(QIcon('icon.png'))
+
+        # Create a central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        layout = QVBoxLayout()
-        central_widget.setLayout(layout)
+        # Create main layout for central widget
+        main_layout = QHBoxLayout(central_widget)
 
-        label = QLabel("Welcome to PyQt6 GUI!")
-        layout.addWidget(label)
+        project_widget = ProjectWidget()
+        main_layout.addWidget(project_widget)
 
-
-        file_loader = FileLoaderWidget()
-        layout.addWidget(file_loader)
+    
         
-        # data_cleaning = DataCleaningWidget()
-        # layout.addWidget(data_cleaning)
+        # Set the window properties
+        self.setWindowTitle('Pivot')
+        self.setGeometry(300, 100, 1000, 600)
+        
+
 
 
 
@@ -153,4 +106,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
+
     sys.exit(app.exec())

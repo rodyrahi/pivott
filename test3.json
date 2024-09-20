@@ -1,0 +1,10 @@
+{
+    "data_path": "",
+    "dropna": {
+        "col": []
+    },
+    "impute": {
+        "col": [],
+        "strategy": ""
+    }
+}

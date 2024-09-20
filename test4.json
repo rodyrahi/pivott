@@ -1,0 +1,10 @@
+{
+    "data_path": "F:/pivott/pivott/test_data.csv",
+    "dropna": {
+        "col": []
+    },
+    "impute": {
+        "col": [],
+        "strategy": ""
+    }
+}

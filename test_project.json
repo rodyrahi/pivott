@@ -1,0 +1,11 @@
+{
+    "data_path": "test_data.csv",
+    "dropna": {
+        "col": ["City"]
+    },
+    "impute": {
+        "col": ["Legislative District"],
+        "strategy": "mean"
+    }
+
+}
