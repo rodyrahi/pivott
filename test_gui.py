@@ -1,4 +1,6 @@
 
+import cProfile
+import pstats
 import json
 import sys
 from PyQt6.QtWidgets import *
@@ -10,14 +12,6 @@ from data_cleaning import *
 from project_window import *
 from custom_widgets import MainButton , Button
 # from sklearn.impute import SimpleImputer
-
-
-
-
-
-
-
-
 
 
 
@@ -52,10 +46,18 @@ class MainWindow(QMainWindow):
 
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
 
-    sys.exit(app.exec())
+
+if __name__ == "__main__":
+  
+    with cProfile.Profile() as profile:  
+        app = QApplication(sys.argv)
+        
+        window = MainWindow()
+        window.show()
+        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
+
+        app.exec()
+        
+    results = pstats.Stats(profile).sort_stats(pstats.SortKey.TIME)
+    results.dump_stats('profile_results.prof')

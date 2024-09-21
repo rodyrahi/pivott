@@ -99,7 +99,7 @@ class imputeMissingWidget(QWidget):
 
             self.main_interface.update_table(df)
             modified_df = df[cols]
-            save_parquet_file(modified_df, f"{name}-{cols[0]}" , self.main_interface.current_df )
+            save_parquet_file(modified_df, f"{name}-{cols[0]}" , self.main_interface )
             
             print(modified_df)
                 
@@ -160,7 +160,7 @@ class dropDuplicateWidget(QWidget):
                 modified_df = df.dropna()
                 self.main_interface.update_table(modified_df)
                 dropped_rows = df[~df.index.isin(modified_df.index)]
-                save_parquet_file(dropped_rows , name , self.main_interface.current_df )
+                save_parquet_file(dropped_rows , name , self.main_interface )
                 
                 print(dropped_rows)
                 

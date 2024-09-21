@@ -42,31 +42,33 @@ def df_from_parquet(file):
     return df
 
 
-def save_parquet_file(df, suffix , current_df):
+def save_parquet_file(df, suffix , main_interface ):
 
-    filepath = current_df[0].replace(".parquet", f"_{suffix}.parquet")
+    filepath = main_interface.current_df[0].replace(".parquet", f"_{suffix}.parquet")
     if os.path.exists(filepath):
         os.remove(filepath)
 
     df.to_parquet(filepath)
-    current_df.append(filepath)
+    main_interface.current_df.append(filepath)
     print(f"File saved as {filepath}")
-    create_final_df(current_df)
+    create_final_df(main_interface.current_df , main_interface.main_df )
 
 
 
 
-def create_final_df(current_df ):
+def create_final_df(current_df , main_df):
 
     final_path = current_df[0].replace("df.parquet", "final_df.parquet")
     if os.path.exists(final_path):
         os.remove(final_path)
 
-    main_df = df_from_parquet(current_df[0])
+    
+    main_df = main_df.copy()
     for index , i in enumerate(current_df):
+        file_df = df_from_parquet(i)
+
         if 'dropna' in i:
-            # main_df = df_from_parquet(current_df[0])
-            file_df = df_from_parquet(i)
+           
 
             main_df = main_df[~main_df.index.isin(file_df.index)]
             main_df.to_parquet(final_path)
@@ -74,11 +76,11 @@ def create_final_df(current_df ):
         elif 'impute' in i:
             
             col = i.split('-')[-1].replace(".parquet", "")
-            file_df = df_from_parquet(i)[col]
+            file_df = file_df[col]
             main_df[col] = file_df
             main_df.to_parquet(final_path)
         else:
-            # main_df = df_from_parquet(current_df[0])
+
             main_df.to_parquet(final_path)
 
 

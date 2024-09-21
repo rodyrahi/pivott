@@ -1,5 +1,6 @@
 import json
 import os
+
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -17,6 +18,7 @@ from file_functions import create_folder , read_save_parquet , df_from_parquet ,
 
 
 class MainInterface(QWidget):
+    
     def __init__(self , project_path):
         super().__init__()
         self.project_path =project_path
@@ -26,7 +28,7 @@ class MainInterface(QWidget):
         self.save_data_folder  = ""
         self.current_df = []
         self.dataframe_columns = []
-
+        self.main_df = None
 
         self.impute_checkboxes = []
 
@@ -55,10 +57,13 @@ class MainInterface(QWidget):
         self.properties_layout = QVBoxLayout()
         self.table_bottom_layout = QVBoxLayout()
 
-        df = df_from_parquet(self.current_df[-1])
+        # df = df_from_parquet(self.current_df[-1])
         self.table_widget = OptimizedTableWidget()
-        self.table_widget.setData(df)
-        self.dataframe_columns = df.columns.to_list()
+        self.main_df = df_from_parquet(self.current_df[0])
+        self.update_table(self.main_df)
+
+        # self.table_widget.setData(df)
+        self.dataframe_columns = self.main_df.columns.to_list()
         print(self.dataframe_columns)
 
 
@@ -66,7 +71,7 @@ class MainInterface(QWidget):
     
         self.table_layout.addLayout(self.table_bottom_layout)
 
-        self.dataframe_info = dataframeinfo(df , parent=self)
+        # self.dataframe_info = dataframeinfo(df , parent=self)
 
     
         features = [
@@ -117,7 +122,7 @@ class MainInterface(QWidget):
             self.table_widget.setData(df)
 
         else:    
-            df = df_from_parquet(self.current_df[-1])
+            df = self.main_df
             self.table_widget.setData(df)
 
     
