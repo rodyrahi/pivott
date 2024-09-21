@@ -31,6 +31,7 @@ class dataframeinfo(QWidget):
         
         self.setWindowTitle("DataFrame Info")
         self.setGeometry(100, 100, 800, 600)
+        self.setMaximumSize(500, 768)  # Set maximum size to a small size
         # Remove the self.show() call from here
 
     def get_info(self):
@@ -105,17 +106,10 @@ class dataframeinfo(QWidget):
             group_box.setLayout(layout)
             tab_layout.addWidget(group_box)
         
+
+    
         tab.setLayout(tab_layout)
-        return tab# if __name__ == '__main__':
-#     app = QApplication(sys.argv)
-
-
-
-#     window = dataframeinfo(pd.read_csv('test.csv'))
-#     app.setStyleSheet(qdarkstyle.load_stylesheet_PyQt6())
-#     window.show()
-#     sys.exit(app.exec_())
-
+        return tab
 
 
 

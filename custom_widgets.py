@@ -10,11 +10,17 @@ class MainButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
         self.setStyleSheet("padding: 20px 40px; font-size:15px")
+
 class Button(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
         self.setStyleSheet("padding: 10px;")
         self.setFixedWidth(150)
+
+
+# ------------------------------------------------------------------------------------------------
+
+
 
 
 class SQCheckBox(QCheckBox):
