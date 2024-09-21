@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 import os
-
+import glob
 
 
 from sklearn.impute import SimpleImputer
@@ -192,6 +192,20 @@ class dropDuplicateWidget(QWidget):
 
 def process_file(main_interface , config=None):
     
+    
+    
+
+    
+    parquet_files = glob.glob(os.path.join(main_interface.save_data_folder, "*.parquet"))
+    for file in parquet_files:
+        if not "df.parquet" in file:
+            
+            os.remove(file)
+            print(f"Removed: {file}")
+        
+
+    
+
     if config is None:
         config = {}
 

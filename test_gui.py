@@ -56,7 +56,7 @@ if __name__ == "__main__":
         window = MainWindow()
         window.show()
         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
-
+        
         app.exec()
         
     results = pstats.Stats(profile).sort_stats(pstats.SortKey.TIME)
