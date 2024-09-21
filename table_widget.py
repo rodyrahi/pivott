@@ -38,14 +38,26 @@ class OptimizedTableWidget(QTableView):
         super().__init__(parent)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
-        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.setAlternatingRowColors(True)
-        self.setSortingEnabled(True)
+        # self.setSortingEnabled(True)
         self.setWordWrap(False)
+        self.horizontalHeader().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.horizontalHeader().customContextMenuRequested.connect(self.openHeaderContextMenu)
 
     def setData(self, data):
         model = OptimizedTableModel(data)
         self.setModel(model)
-        # self.resizeColumnsToContents()
+
+    def openHeaderContextMenu(self, position):
+        menu = QMenu(self)
+        action = menu.addAction("Column Options")
+        action.triggered.connect(lambda: self.handleColumnOptions(self.horizontalHeader().logicalIndexAt(position)))
+        menu.exec(self.horizontalHeader().mapToGlobal(position))
+
+    def handleColumnOptions(self, column):
+        # Add your column options handling logic here
+        print(f"Column options requested for column {column}")
+
 
 
