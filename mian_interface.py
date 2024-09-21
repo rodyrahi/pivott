@@ -48,9 +48,12 @@ class MainInterface(QWidget):
         read_save_parquet(self.file_path, f"{self.save_data_folder}/df.parquet")
         self.current_df = [f"{self.save_data_folder}/df.parquet"]
         print(self.current_df)
+        self.main_df = df_from_parquet(self.current_df[0])
 
             
     def initUI(self):
+
+        
         main_layout = QHBoxLayout()
 
         self.table_layout = QVBoxLayout()
@@ -59,7 +62,7 @@ class MainInterface(QWidget):
 
         # df = df_from_parquet(self.current_df[-1])
         self.table_widget = OptimizedTableWidget()
-        self.main_df = df_from_parquet(self.current_df[0])
+        
         self.update_table(self.main_df)
 
         # self.table_widget.setData(df)

@@ -51,37 +51,30 @@ def save_parquet_file(df, suffix , main_interface ):
     df.to_parquet(filepath)
     main_interface.current_df.append(filepath)
     print(f"File saved as {filepath}")
+
+    print(main_interface.main_df.shape)
     create_final_df(main_interface.current_df , main_interface.main_df )
 
 
 
 
-def create_final_df(current_df , main_df):
-
+def create_final_df(current_df, main_df):
     final_path = current_df[0].replace("df.parquet", "final_df.parquet")
     if os.path.exists(final_path):
         os.remove(final_path)
 
-    
     main_df = main_df.copy()
-    for index , i in enumerate(current_df):
-        file_df = df_from_parquet(i)
+    for file_path in current_df:
+        file_df = df_from_parquet(file_path)
 
-        if 'dropna' in i:
-           
-
+        if 'dropna' in file_path:
             main_df = main_df[~main_df.index.isin(file_df.index)]
-            main_df.to_parquet(final_path)
-            print(main_df)
-        elif 'impute' in i:
-            
-            col = i.split('-')[-1].replace(".parquet", "")
-            file_df = file_df[col]
-            main_df[col] = file_df
-            main_df.to_parquet(final_path)
-        else:
+        elif 'impute' in file_path:
+            col = file_path.split('-')[-1].replace(".parquet", "")
+            main_df[col] = file_df[col]
 
-            main_df.to_parquet(final_path)
+    main_df.to_parquet(final_path)
+    print(f"Final DataFrame saved to {final_path}")
 
 
 

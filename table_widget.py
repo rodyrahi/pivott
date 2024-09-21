@@ -46,6 +46,6 @@ class OptimizedTableWidget(QTableView):
     def setData(self, data):
         model = OptimizedTableModel(data)
         self.setModel(model)
-        self.resizeColumnsToContents()
+        # self.resizeColumnsToContents()
 
 

@@ -33,7 +33,7 @@ def on_uncheck_checkbox(main_interface , name=None):
             os.remove(i)
 
 
-    create_final_df(main_interface.current_df)
+    create_final_df(main_interface.current_df , main_interface.main_df)
     main_interface.update_table()
 
 
@@ -195,27 +195,14 @@ def process_file(main_interface , config=None):
     if config is None:
         config = {}
 
-    # Step 1: Read and save the CSV as a Parquet file
-    # read_save_file(csv_filepath, parquet_filepath)
 
-    # Step 2: Apply operations based on the config
     impute = imputeMissingWidget(main_interface)
 
 
     for operation, details in config.items():
 
-        df = df_from_parquet(main_interface.current_df[0])
+        df = main_interface.main_df
 
-        
-        # if operation == "dropna":
-        #     cols = details.get("col", None)
-        #     df = drop_na(df, cols)
-        #     save_parquet_file(df, "dropna")
-
-        # elif operation == "dropcol":
-        #     cols = details.get("col", [])
-        #     df = drop_col(df, cols)
-        #     save_parquet_file(df, "dropcol")
         
         if operation == "impute":
             cols = details.get("col", [])
@@ -226,6 +213,3 @@ def process_file(main_interface , config=None):
                     if checkbox[0] == f"impute-{col}":
                         df = impute.impute_missing(state=True, df = df ,cols=[col], strategy=strategy , checkbox=checkbox[1])
             
-        # df.to_parquet(main_interface.current_df[0].replace("df.parquet" , "final_df.parquet"))    
-
-        # print(f"Shape after {operation}: {df.shape}")
