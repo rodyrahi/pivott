@@ -9,11 +9,11 @@ from dataframe_table import tableWidget
 from table_widget import OptimizedTableWidget
 from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
-from operation_widgets import dropDuplicateWidget , imputeMissingWidget
+from operation_widgets import dropDuplicateWidget , imputeMissingWidget , process_file
 
 
 
-from file_functions import create_folder , read_save_parquet , df_from_parquet 
+from file_functions import create_folder , read_save_parquet , df_from_parquet , read_json_file
 
 
 class MainInterface(QWidget):
@@ -91,16 +91,18 @@ class MainInterface(QWidget):
 
         self.setLayout(main_layout)
 
+        process_file(self , read_json_file(self.project_path) )
 
 
 
 
-    def new_project(self):
-        # TODO: Implement new project functionality
-        pass
 
-    def open_project(self):
-        self.dataframe_info.show()
+    # def new_project(self):
+    #     # TODO: Implement new project functionality
+    #     pass
+
+    # def open_project(self):
+    #     self.dataframe_info.show()
 
 
 

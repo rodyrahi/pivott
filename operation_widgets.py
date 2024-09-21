@@ -3,6 +3,8 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 import os
 
+
+
 from sklearn.impute import SimpleImputer
 
 
@@ -68,8 +70,10 @@ class imputeMissingWidget(QWidget):
             checkbox = QCheckBox("Impute")
             checkbox.stateChanged.connect(lambda state, c=col, s=strategy_combo: self.impute_missing(state=state, cols=[c], strategy=s.currentText() ))
             
+
             row_layout.addWidget(strategy_combo)
             row_layout.addWidget(checkbox)
+            self.main_interface.impute_checkboxes.append(( f"impute-{col}" , checkbox))
 
             layout.addLayout(row_layout)
 
@@ -79,11 +83,16 @@ class imputeMissingWidget(QWidget):
     def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute" , checkbox=None):
         df = set_df(df, self.main_interface)
         
+
         if state == 2 or state==True:
             print("impute missing")
         
             if checkbox:
+                checkbox.blockSignals(True)
                 checkbox.setChecked(True)
+                checkbox.blockSignals(False)
+    
+
 
             imputer = SimpleImputer(strategy=strategy)
             df[cols] = imputer.fit_transform(df[cols])
@@ -108,15 +117,6 @@ class imputeMissingWidget(QWidget):
 
             # create_final_df(self.main_interface.current_df)
             # self.main_interface.update_table()
-
-
-
-
-
-
-
-
-
 
 class dropDuplicateWidget(QWidget):
     def __init__(self , main_interface):
@@ -184,3 +184,48 @@ class dropDuplicateWidget(QWidget):
             # dropped_rows = df[df.isna().any(axis=1)]
 
         # return dropped_rows
+
+
+
+
+
+
+def process_file(main_interface , config=None):
+    
+    if config is None:
+        config = {}
+
+    # Step 1: Read and save the CSV as a Parquet file
+    # read_save_file(csv_filepath, parquet_filepath)
+
+    # Step 2: Apply operations based on the config
+    impute = imputeMissingWidget(main_interface)
+
+
+    for operation, details in config.items():
+
+        df = df_from_parquet(main_interface.current_df[0])
+
+        
+        # if operation == "dropna":
+        #     cols = details.get("col", None)
+        #     df = drop_na(df, cols)
+        #     save_parquet_file(df, "dropna")
+
+        # elif operation == "dropcol":
+        #     cols = details.get("col", [])
+        #     df = drop_col(df, cols)
+        #     save_parquet_file(df, "dropcol")
+        
+        if operation == "impute":
+            cols = details.get("col", [])
+            strategies = details.get("strategy", [])
+            
+            for col, strategy in zip(cols, strategies):
+                for checkbox in main_interface.impute_checkboxes:
+                    if checkbox[0] == f"impute-{col}":
+                        df = impute.impute_missing(state=True, df = df ,cols=[col], strategy=strategy , checkbox=checkbox[1])
+            
+        # df.to_parquet(main_interface.current_df[0].replace("df.parquet" , "final_df.parquet"))    
+
+        # print(f"Shape after {operation}: {df.shape}")

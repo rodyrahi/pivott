@@ -3,6 +3,7 @@ import json
 import pandas as pd
 
 
+
 def create_folder(folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -81,5 +82,11 @@ def create_final_df(current_df ):
             main_df.to_parquet(final_path)
 
 
+
+
+def read_json_file(file_path):
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file)
+    return data
         
 
