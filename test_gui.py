@@ -8,7 +8,6 @@ import qdarkstyle
 import pandas as pd
 import glob
 import os
-from data_cleaning import *
 from project_window import *
 from custom_widgets import MainButton , Button
 # from sklearn.impute import SimpleImputer

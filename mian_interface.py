@@ -6,7 +6,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
 from custom_widgets import MainButton , Button
-from dataframe_table import tableWidget
+# from dataframe_table import tableWidget
 from table_widget import OptimizedTableWidget
 from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
