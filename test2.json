@@ -4,7 +4,7 @@
         "col": []
     },
     "impute": {
-        "col": ["Legislative District"],
-        "strategy": ["mean"]
+        "col": [],
+        "strategy": []
     }
 }

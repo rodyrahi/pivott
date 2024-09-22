@@ -2,3 +2,5 @@
 .venv
 .env
 .update_pivott.py
+.test_gui.dist
+.test_gui.build

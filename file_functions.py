@@ -5,6 +5,46 @@ import pandas as pd
 
 
 
+
+
+def update_add_json_file(main_interface , suffix , strategy):
+
+    col = suffix.split('-')[-1]
+    feature = suffix.split('-')[0]
+    print(col)
+    data = read_json_file(main_interface.project_path)
+
+   
+
+    if col not in data[feature]['col']:
+        data[feature]['col'].append(col)
+
+    if strategy and strategy:
+        data[feature]['strategy'].append(strategy)
+
+    with open(main_interface.project_path, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+    print(f"Updated {feature} in JSON: {data[feature]}")
+
+def update_remove_json_file(main_interface , suffix , strategy):
+
+    col = suffix.split('-')[-1]
+    feature = suffix.split('-')[0]
+    print(col)
+    data = read_json_file(main_interface.project_path)
+
+    if col in data[feature]['col']:
+        data[feature]['col'].remove(col)
+
+    if strategy and strategy in data[feature]['strategy']:
+        data[feature]['strategy'].remove(strategy)
+
+    with open(main_interface.project_path, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+    print(f"Updated {feature} in JSON: {data[feature]}")
+
+
+
 def create_folder(folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -19,7 +59,7 @@ def create_json_file(file_path, data=None):
             },
             "impute": {
                 "col": [],
-                "strategy": ""
+                "strategy": []
             }
 
         }
@@ -32,10 +72,10 @@ def create_json_file(file_path, data=None):
 def read_save_parquet(file , save_path):
     try:
         df = pd.read_csv(file)
-        df.to_parquet(save_path)
+        df.to_parquet(save_path , engine='pyarrow')
     except:
         df = pd.read_excel(file)
-        df.to_parquet(save_path)
+        df.to_parquet(save_path , engine='pyarrow')
 
 
 def df_from_parquet(file):
@@ -43,30 +83,38 @@ def df_from_parquet(file):
     return df
 
 
-def save_parquet_file(df, suffix , main_interface ):
+def save_parquet_file(df, suffix , main_interface , strategy = None):
 
     filepath = main_interface.current_df[0].replace(".parquet", f"_{suffix}.parquet")
     if os.path.exists(filepath):
         os.remove(filepath)
 
-    df.to_parquet(filepath)
+    df.to_parquet(filepath , engine='pyarrow')
     main_interface.current_df.append(filepath)
     print(f"File saved as {filepath}")
 
     print(main_interface.main_df.shape)
-    create_final_df(main_interface.current_df , main_interface.main_df )
+    create_final_df(main_interface , main_interface.main_df )
+    
+    update_add_json_file(main_interface , suffix , strategy)
+    
 
 
 
 
-def create_final_df(current_df, main_df):
-    final_path = current_df[0].replace("df.parquet", "final_df.parquet")
+
+
+
+
+def create_final_df(main_interface, main_df):
+    final_path = main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
     if os.path.exists(final_path):
         os.remove(final_path)
 
     main_df = main_df.copy()
     # main_df = df_from_parquet(current_df[0].replace("df.parquet", "final_df.parquet"))
-    for file_path in current_df:
+    for file_path in main_interface.current_df:
+
         file_df = df_from_parquet(file_path)
 
         if 'dropna' in file_path:
@@ -75,8 +123,14 @@ def create_final_df(current_df, main_df):
             col = file_path.split('-')[-1].replace(".parquet", "")
             main_df[col] = file_df[col]
 
-    main_df.to_parquet(final_path)
+    main_df.to_parquet(final_path , engine='pyarrow')
     print(f"Final DataFrame saved to {final_path}")
+
+
+    
+
+    
+
 
 
 

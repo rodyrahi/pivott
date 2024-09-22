@@ -1,4 +1,5 @@
 import gc
+import json
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
@@ -10,7 +11,8 @@ from sklearn.impute import SimpleImputer
 
 
 
-from file_functions import read_save_parquet , df_from_parquet , save_parquet_file, create_final_df
+from file_functions import read_save_parquet , df_from_parquet , save_parquet_file, create_final_df , read_json_file , \
+    update_remove_json_file
 
 
 def set_df(df , main_interface):
@@ -23,7 +25,7 @@ def set_df(df , main_interface):
     
     return df
 
-def on_uncheck_checkbox(main_interface , name=None):
+def on_uncheck_checkbox(main_interface , name=None , strategy=None):
     
     print("not checked")
 
@@ -34,8 +36,11 @@ def on_uncheck_checkbox(main_interface , name=None):
             os.remove(i)
 
 
-    create_final_df(main_interface.current_df , main_interface.main_df)
+    create_final_df(main_interface , main_interface.main_df)
     main_interface.update_table()
+
+    
+    update_remove_json_file(main_interface , name , strategy)
 
 
 
@@ -100,24 +105,14 @@ class imputeMissingWidget(QWidget):
 
             self.main_interface.update_table(df)
             modified_df = df[cols]
-            save_parquet_file(modified_df, f"{name}-{cols[0]}" , self.main_interface )
+            save_parquet_file(modified_df, f"{name}-{cols[0]}" , self.main_interface , strategy )
             
             print(modified_df)
                 
         else:
-            on_uncheck_checkbox(self.main_interface , name=f"{name}-{cols[0]}")
-
-            # print("not checked")
-
-            # for i in self.main_interface.current_df:
-            #     print(i)
-            #     if f"df_{name}-{cols[0]}.parquet" in i:
-            #         self.main_interface.current_df.remove(i)
-            #         os.remove(i)
+            on_uncheck_checkbox(self.main_interface , name=f"{name}-{cols[0]}" , strategy=strategy)
 
 
-            # create_final_df(self.main_interface.current_df)
-            # self.main_interface.update_table()
 
 class dropDuplicateWidget(QWidget):
     def __init__(self , main_interface):
@@ -176,7 +171,7 @@ class dropDuplicateWidget(QWidget):
                     os.remove(i)
 
 
-            create_final_df(self.main_interface.current_df)
+            create_final_df(self.main_interface)
             self.main_interface.update_table()
 
             # if f"df_{name}.parquet" in self.main_interface.current_df[-1]:
@@ -194,11 +189,6 @@ class dropDuplicateWidget(QWidget):
 def process_file(main_interface , config=None):
     
     
-    
-
-
-    
-
     if config is None:
         config = {}
 
