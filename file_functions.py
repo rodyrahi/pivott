@@ -1,3 +1,4 @@
+import gc
 import os
 import json
 import pandas as pd
@@ -64,6 +65,7 @@ def create_final_df(current_df, main_df):
         os.remove(final_path)
 
     main_df = main_df.copy()
+    # main_df = df_from_parquet(current_df[0].replace("df.parquet", "final_df.parquet"))
     for file_path in current_df:
         file_df = df_from_parquet(file_path)
 
@@ -84,4 +86,3 @@ def read_json_file(file_path):
         data = json.load(json_file)
     return data
         
-

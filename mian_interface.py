@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 
@@ -37,7 +38,9 @@ class MainInterface(QWidget):
         self.initUI()
     
     def prepare_project(self):
-        
+
+
+
         with open(self.project_path, 'r') as f:
             self.project_data = json.load(f)
 
@@ -45,6 +48,9 @@ class MainInterface(QWidget):
         self.save_data_folder = f"{self.project_path.split('.')[0]}/save_data"
         print(self.save_data_folder)
         create_folder(self.save_data_folder)
+
+        self.cache_remove_files()
+
         read_save_parquet(self.file_path, f"{self.save_data_folder}/df.parquet")
         self.current_df = [f"{self.save_data_folder}/df.parquet"]
         print(self.current_df)
@@ -112,7 +118,10 @@ class MainInterface(QWidget):
     # def open_project(self):
     #     self.dataframe_info.show()
 
-
+    def cache_remove_files(self):
+        parquet_files = glob.glob(os.path.join(self.save_data_folder, "*.parquet"))
+        for file in parquet_files:
+            os.remove(file)
 
     def update_table(self , df = None):
 

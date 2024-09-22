@@ -1,3 +1,4 @@
+import gc
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
@@ -195,14 +196,6 @@ def process_file(main_interface , config=None):
     
     
 
-    
-    parquet_files = glob.glob(os.path.join(main_interface.save_data_folder, "*.parquet"))
-    for file in parquet_files:
-        if not "df.parquet" in file:
-            
-            os.remove(file)
-            print(f"Removed: {file}")
-        
 
     
 
@@ -216,7 +209,8 @@ def process_file(main_interface , config=None):
     for operation, details in config.items():
 
         df = main_interface.main_df
-
+        # df = df_from_parquet(main_interface.current_df[0])
+ 
         
         if operation == "impute":
             cols = details.get("col", [])
@@ -227,3 +221,5 @@ def process_file(main_interface , config=None):
                     if checkbox[0] == f"impute-{col}":
                         df = impute.impute_missing(state=True, df = df ,cols=[col], strategy=strategy , checkbox=checkbox[1])
             
+       
+
