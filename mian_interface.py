@@ -11,7 +11,7 @@ from custom_widgets import MainButton , Button
 from table_widget import OptimizedTableWidget
 from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
-from operation_widgets import dropDuplicateWidget , imputeMissingWidget , process_file
+from operation_widgets import dropDuplicateWidget , imputeMissingWidget , dropColumnWidget , process_file
 
 
 
@@ -32,6 +32,7 @@ class MainInterface(QWidget):
         self.main_df = None
 
         self.impute_checkboxes = []
+        self.drop_column_checkboxes = []
 
 
         self.prepare_project()
@@ -66,42 +67,40 @@ class MainInterface(QWidget):
         self.properties_layout = QVBoxLayout()
         self.table_bottom_layout = QVBoxLayout()
 
-        # df = df_from_parquet(self.current_df[-1])
         self.table_widget = OptimizedTableWidget()
         
         self.update_table(self.main_df)
 
-        # self.table_widget.setData(df)
         self.dataframe_columns = self.main_df.columns.to_list()
         print(self.dataframe_columns)
-
 
         self.table_layout.addWidget(self.table_widget)
     
         self.table_layout.addLayout(self.table_bottom_layout)
 
-        # self.dataframe_info = dataframeinfo(df , parent=self)
-
-    
         features = [
             ("Drop Duplicates" , dropDuplicateWidget),
             ("Impute Missing", imputeMissingWidget ),
+            ("Drop Columns", dropColumnWidget ),
         ]
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
 
         for feature_name, feature_widget in features:
             collapsible = CollapsableWidget(feature_name)
             collapsible.setWidgets(feature_widget , self)
-            self.properties_layout.addWidget(collapsible)
+            scroll_layout.addWidget(collapsible)
 
-    
-        
+        scroll_area.setWidget(scroll_widget)
+        self.properties_layout.addWidget(scroll_area)
     
         self.table_layout.setSpacing(20) 
         self.properties_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.addLayout(self.table_layout, 75)
-        main_layout.addLayout(self.properties_layout, 25)
-
-    
+        main_layout.addLayout(self.table_layout, 50)
+        main_layout.addLayout(self.properties_layout, 50)
 
         self.setLayout(main_layout)
 
