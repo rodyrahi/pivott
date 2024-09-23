@@ -44,20 +44,22 @@ def on_uncheck_checkbox(main_interface , name=None , strategy=None):
 
 
 
-
+checkbox_map = {}
 
 class featureWidget(QWidget):
     def __init__(self, main_interface):
         super().__init__()
         self.main_interface = main_interface
-        self.checkbox_map = {}
+        
 
-    def disable_checkbox(self, column_name):
-        if column_name in self.checkbox_map:
-            checkbox = self.checkbox_map[column_name]
+
+    def disable_checkbox(self, column_name, action_type):
+        key = (action_type, column_name)  # Create a key with action_type and column_name
+        if key in checkbox_map:
+            checkbox = checkbox_map[key]
             checkbox.setEnabled(False)
         else:
-            print(f"No checkbox found for column: {column_name}")
+            print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
 
 
@@ -94,7 +96,7 @@ class imputeMissingWidget(featureWidget):
             row_layout.addWidget(checkbox)
             self.main_interface.impute_checkboxes.append((f"impute-{col}", checkbox))
 
-            self.checkbox_map[col] = checkbox
+            checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
              
             layout.addLayout(row_layout)
 
@@ -102,44 +104,41 @@ class imputeMissingWidget(featureWidget):
         self.setLayout(layout)
 
 
-    def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute" , checkbox=None):
+    def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
         df = set_df(df, self.main_interface)
         
 
-        if state == 2 or state==True:
-            print("impute missing")
+        if state == 2 or state == True:
+            print("Imputing missing values")
         
             if checkbox:
                 checkbox.blockSignals(True)
                 checkbox.setChecked(True)
                 checkbox.blockSignals(False)
     
-
-
             imputer = SimpleImputer(strategy=strategy)
             df[cols] = imputer.fit_transform(df[cols])
 
-           
             modified_df = df[cols]
-            save_parquet_file(modified_df, f"{name}-{cols[0]}" , self.main_interface , strategy )
+            save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface, strategy)
             self.main_interface.update_table()
+            
             print(modified_df)
    
         else:
-            on_uncheck_checkbox(self.main_interface , name=f"{name}-{cols[0]}" , strategy=strategy)
+            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
 
 
 
 class dropColumnWidget(featureWidget):
     def __init__(self, main_interface):
-        super().__init__( main_interface)
+        super().__init__(main_interface)
 
 
     def initUI(self):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
     
-        
         final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
         if os.path.exists(final_df):
             final_df = df_from_parquet(final_df)
@@ -156,56 +155,46 @@ class dropColumnWidget(featureWidget):
             
         
             checkbox = QCheckBox("Drop Column")
-            checkbox.stateChanged.connect(lambda state, c=col, : self.drop_column(state=state, cols=[c]))
+            checkbox.stateChanged.connect(lambda state, c=col: self.drop_column(state=state, cols=[c]))
             
 
-            # row_layout.addWidget(strategy_combo)
             row_layout.addWidget(checkbox)
-            self.main_interface.drop_column_checkboxes.append(( f"drop_column-{col}" , checkbox))
+            self.main_interface.drop_column_checkboxes.append((f"drop_column-{col}", checkbox))
 
-            self.checkbox_map[col] = checkbox
+            checkbox_map[("drop_column", col)] = checkbox  # Store the checkbox in the shared map
              
+
+            
             layout.addLayout(row_layout)
 
-        self.disable_checkbox("test")
+        
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
 
-
-
-
-    def drop_column(self, state, df=None, cols=None, strategy=None, name="drop_column" , checkbox=None):
+    def drop_column(self, state, df=None, cols=None, strategy=None, name="drop_column", checkbox=None):
         df = set_df(df, self.main_interface)
-        
 
-        if state == 2 or state==True:
-            print("impute missing")
+        if state == 2 or state == True:
+            print("Dropping column(s)")
         
             if checkbox:
                 checkbox.blockSignals(True)
                 checkbox.setChecked(True)
                 checkbox.blockSignals(False)
-    
 
-
-            
             if cols:
-                dropped_columns = df[cols].copy()  # Get the whole column(s) that will be dropped
+                dropped_columns = df[cols].copy()
                 df = df.drop(columns=cols)
-            
-            
-            
-            save_parquet_file(dropped_columns, f"{name}-{cols[0]}" , self.main_interface)
-            self.main_interface.update_table()
-            print(f"Dropped column(s): {cols}")
-            
 
+            save_parquet_file(dropped_columns, f"{name}-{cols[0]}", self.main_interface)
+            self.main_interface.update_table()
+
+            self.disable_checkbox(cols[0] , 'impute')            
+            print(f"Dropped column(s): {cols}")
    
         else:
-            on_uncheck_checkbox(self.main_interface , name=f"{name}-{cols[0]}" )
-
-
+            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}")
 
 
 

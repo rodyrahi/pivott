@@ -57,6 +57,8 @@ class CollapsableWidget(QWidget):
             self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
             self.setLayout(self.main_layout)
 
+        
+
         def toggleContent(self):
             # Toggle the visibility of the scroll area
             if self.scroll_area.isVisible():

@@ -1,15 +1,17 @@
 {
     "data_path": "F:/pivott/pivott/test_data.csv",
     "drop_column": {
-        "col": [
-            "Legislative District"
-        ]
+        "col": []
     },
     "dropna": {
         "col": []
     },
     "impute": {
-        "col": [],
-        "strategy": []
+        "col": [
+            "Legislative District"
+        ],
+        "strategy": [
+            "mean"
+        ]
     }
 }
