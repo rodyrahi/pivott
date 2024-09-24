@@ -5,6 +5,8 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 import os
 import glob
+import numpy as np
+import pandas as pd
 
 
 from sklearn.impute import SimpleImputer
@@ -61,6 +63,13 @@ class featureWidget(QWidget):
         else:
             print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
+    def enable_checkbox(self, column_name, action_type):
+        key = (action_type, column_name)  # Create a key with action_type and column_name
+        if key in checkbox_map:
+            checkbox = checkbox_map[key]
+            checkbox.setEnabled(True)
+        else:
+            print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
 
 class imputeMissingWidget(featureWidget):
@@ -82,7 +91,7 @@ class imputeMissingWidget(featureWidget):
         for col in columns:
             row_layout = QHBoxLayout()
             
-            col_label = QLabel(col)
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
             row_layout.addWidget(col_label)
             
             strategy_combo = QComboBox()
@@ -150,7 +159,7 @@ class dropColumnWidget(featureWidget):
         for col in columns:
             row_layout = QHBoxLayout()
             
-            col_label = QLabel(col)
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
             row_layout.addWidget(col_label)
             
         
@@ -190,11 +199,102 @@ class dropColumnWidget(featureWidget):
             save_parquet_file(dropped_columns, f"{name}-{cols[0]}", self.main_interface)
             self.main_interface.update_table()
 
-            self.disable_checkbox(cols[0] , 'impute')            
+            self.disable_checkbox(cols[0] , 'impute')
+            self.disable_checkbox(cols[0] , 'iqr')    
+
             print(f"Dropped column(s): {cols}")
    
         else:
             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}")
+            self.disable_checkbox(cols[0] , 'impute')
+            self.disable_checkbox(cols[0] , 'iqr')    
+
+
+class removeOutlierWidget(featureWidget):
+    def __init__(self, main_interface):
+        super().__init__(main_interface)
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
+    
+        final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        if os.path.exists(final_df):
+            final_df = df_from_parquet(final_df)
+        else:
+            final_df = df_from_parquet(self.main_interface.current_df[0])
+        
+        columns = final_df.columns.tolist()
+
+        for col in columns:
+            if pd.api.types.is_numeric_dtype(final_df[col]):
+                row_layout = QHBoxLayout()
+                
+                col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+                row_layout.addWidget(col_label)
+
+                
+                
+                method_dropdown = QComboBox()
+                method_dropdown.addItems(["IQR", "Z-Score"])
+                
+                remove_checkbox = QCheckBox("Remove Outliers")
+                remove_checkbox.stateChanged.connect(lambda state, c=col , method = method_dropdown.currentText().lower() : self.remove_outlier(state=state, cols=[c], method=method))
+                
+                row_layout.addWidget(method_dropdown)
+                row_layout.addWidget(remove_checkbox)
+
+                if method_dropdown.currentText().lower() == "iqr":
+                    self.main_interface.remove_outlier_checkboxes.append((f"remove_outlier-{col}-iqr", remove_checkbox))
+                    checkbox_map[("remove_outlier-iqr", col)] = remove_checkbox
+
+                elif method_dropdown.currentText().lower() == "z-score":
+                    self.main_interface.remove_outlier_checkboxes.append((f"remove_outlier-{col}-zscore", remove_checkbox))
+                    checkbox_map[("remove_outlier-zscore", col)] = remove_checkbox
+
+                
+                
+                
+                layout.addLayout(row_layout)
+
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(layout)
+
+    def remove_outlier(self, state, df=None, cols=None, method='iqr', name="remove_outlier", checkbox=None):
+        df = set_df(df, self.main_interface)
+        
+        if state == 2 or state == True:
+            print(f"Removing outliers using {method}")
+        
+            if checkbox:
+                checkbox.blockSignals(True)
+                checkbox.setChecked(True)
+                checkbox.blockSignals(False)
+
+            if cols:
+                for col in cols:
+                    if method == 'iqr':
+                        Q1 = df[col].quantile(0.25)
+                        Q3 = df[col].quantile(0.75)
+                        IQR = Q3 - Q1
+                        lower_bound = Q1 - 1.5 * IQR
+                        upper_bound = Q3 + 1.5 * IQR
+                        # df[col] = df[col].clip(lower_bound, upper_bound)
+
+                        modified_df = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
+
+                    elif method == 'zscore':
+                        z_scores = np.abs((df[col] - df[col].mean()) / df[col].std())
+                        df[col] = df[col].mask(z_scores > 3, df[col].mean())
+
+
+            save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface , strategy=method)
+            self.main_interface.update_table()
+
+            print(f"Removed outliers from column(s): {cols} using {method}")
+   
+        else:
+            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}" , strategy=method)
 
 
 
@@ -280,6 +380,7 @@ def process_file(main_interface , config=None):
 
     impute = imputeMissingWidget(main_interface)
     drop_column = dropColumnWidget(main_interface)
+    remove_outlier = removeOutlierWidget(main_interface)
 
 
     for operation, details in config.items():
@@ -306,4 +407,14 @@ def process_file(main_interface , config=None):
                         
                         df = drop_column.drop_column(state=True, df = df ,cols=[col] , checkbox=checkbox[1])
        
+        if operation == "remove_outlier":
+            
+            cols = details.get("col", [])
+            strategies = details.get("strategy", [])
+            for col, strategy in zip(cols, strategies):
+                
+                for checkbox in main_interface.remove_outlier_checkboxes:
+                    
+                    if checkbox[0] == f"remove_outlier-{col}-{strategy}":
+                        df = remove_outlier.remove_outlier(state=True, df = df ,cols=[col] ,  checkbox=checkbox[1] , method=strategy)
 

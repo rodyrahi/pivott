@@ -54,12 +54,27 @@ def create_json_file(file_path, data=None):
     data = {
 
             "data_path": "",
+            "drop_column": {
+                    "col": []
+                },
             "dropna": {
                 "col": []
             },
             "impute": {
-                "col": [],
-                "strategy": []
+                "col": [
+                    
+                ],
+                "strategy": [
+                   
+                ]
+            },
+            "remove_outlier": {
+                "col": [
+                   
+                ],
+                "strategy": [
+                   
+                ]
             }
 
         }
@@ -132,6 +147,13 @@ def create_final_df(main_interface, main_df):
             col = file_path.split('-')[-1].replace(".parquet", "")
             
             main_df[col] = file_df[col]
+
+        elif 'remove_outlier' in file_path:
+            col = file_path.split('-')[-1].replace(".parquet", "")
+  
+            main_df = main_df[~main_df.index.isin(file_df.index)]
+
+        
             
     print(main_df)
     if os.path.exists(final_path):

@@ -13,5 +13,13 @@
         "strategy": [
             "mean"
         ]
+    },
+    "remove_outlier": {
+        "col": [
+            "DOL Vehicle ID"
+        ],
+        "strategy": [
+            "iqr"
+        ]
     }
 }

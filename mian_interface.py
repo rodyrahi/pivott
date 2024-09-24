@@ -11,11 +11,13 @@ from custom_widgets import MainButton , Button
 from table_widget import OptimizedTableWidget
 from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
-from operation_widgets import dropDuplicateWidget , imputeMissingWidget , dropColumnWidget , process_file
+from operation_widgets import dropDuplicateWidget ,\
+    imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file
 
 
 
-from file_functions import create_folder , read_save_parquet , df_from_parquet , read_json_file
+from file_functions import create_folder , read_save_parquet , df_from_parquet\
+      , read_json_file
 
 
 class MainInterface(QWidget):
@@ -33,11 +35,12 @@ class MainInterface(QWidget):
 
         self.impute_checkboxes = []
         self.drop_column_checkboxes = []
+        self.remove_outlier_checkboxes = []
 
 
         self.prepare_project()
         self.initUI()
-    
+
     def prepare_project(self):
 
 
@@ -57,10 +60,10 @@ class MainInterface(QWidget):
         print(self.current_df)
         self.main_df = df_from_parquet(self.current_df[0])
 
-            
+        
     def initUI(self):
 
-        
+    
         main_layout = QHBoxLayout()
 
         self.table_layout = QVBoxLayout()
@@ -68,24 +71,26 @@ class MainInterface(QWidget):
         self.table_bottom_layout = QVBoxLayout()
 
         self.table_widget = OptimizedTableWidget()
-        
+    
         self.update_table(self.main_df)
 
         self.dataframe_columns = self.main_df.columns.to_list()
         print(self.dataframe_columns)
 
         self.table_layout.addWidget(self.table_widget)
-    
+
         self.table_layout.addLayout(self.table_bottom_layout)
 
         features = [
             ("Drop Duplicates" , dropDuplicateWidget),
             ("Impute Missing", imputeMissingWidget ),
             ("Drop Columns", dropColumnWidget ),
+            ("Remove Outliers", removeOutlierWidget),
         ]
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
+    
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout(scroll_widget)
 
@@ -96,26 +101,19 @@ class MainInterface(QWidget):
 
         scroll_area.setWidget(scroll_widget)
         self.properties_layout.addWidget(scroll_area)
-    
-        self.table_layout.setSpacing(20) 
+
+        # self.table_layout.setSpacing(20) 
+
         self.properties_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.addLayout(self.table_layout, 50)
-        main_layout.addLayout(self.properties_layout, 50)
+        scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        main_layout.addLayout(self.table_layout, 70)
+        main_layout.addLayout(self.properties_layout, 30)
 
         self.setLayout(main_layout)
 
         process_file(self , read_json_file(self.project_path) )
 
 
-
-
-
-    # def new_project(self):
-    #     # TODO: Implement new project functionality
-    #     pass
-
-    # def open_project(self):
-    #     self.dataframe_info.show()
 
     def cache_remove_files(self):
         parquet_files = glob.glob(os.path.join(self.save_data_folder, "*.parquet"))
