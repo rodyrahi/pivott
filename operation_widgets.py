@@ -32,7 +32,7 @@ def on_uncheck_checkbox(main_interface , name=None , strategy=None):
     print("not checked")
 
     for i in main_interface.current_df:
-        print(i)
+        
         if f"df_{name}.parquet" in i:
             main_interface.current_df.remove(i)
             os.remove(i)
@@ -206,8 +206,8 @@ class dropColumnWidget(featureWidget):
    
         else:
             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}")
-            self.disable_checkbox(cols[0] , 'impute')
-            self.disable_checkbox(cols[0] , 'iqr')    
+            self.enable_checkbox(cols[0] , 'impute')
+            self.enable_checkbox(cols[0] , 'iqr')    
 
 
 class removeOutlierWidget(featureWidget):

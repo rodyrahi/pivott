@@ -7,19 +7,11 @@
         "col": []
     },
     "impute": {
-        "col": [
-            "Legislative District"
-        ],
-        "strategy": [
-            "mean"
-        ]
+        "col": [],
+        "strategy": []
     },
     "remove_outlier": {
-        "col": [
-            "DOL Vehicle ID"
-        ],
-        "strategy": [
-            "iqr"
-        ]
+        "col": [],
+        "strategy": []
     }
 }

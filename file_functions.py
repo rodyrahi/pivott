@@ -126,7 +126,7 @@ def create_final_df(main_interface, main_df):
     if os.path.exists(final_path):
         os.remove(final_path)
 
-    main_df = main_df
+    main_df = main_df.copy()
     # main_df = df_from_parquet(current_df[0].replace("df.parquet", "final_df.parquet"))
     
     print(main_interface.current_df)
@@ -142,20 +142,22 @@ def create_final_df(main_interface, main_df):
             # print(col)
             main_df = main_df.drop(col, axis=1)
 
-        
-        elif 'impute' in file_path:
-            col = file_path.split('-')[-1].replace(".parquet", "")
-            
-            main_df[col] = file_df[col]
-
         elif 'remove_outlier' in file_path:
             col = file_path.split('-')[-1].replace(".parquet", "")
   
             main_df = main_df[~main_df.index.isin(file_df.index)]
 
         
+        elif 'impute' in file_path:
+            print("impute is called")
+            col = file_path.split('-')[-1].replace(".parquet", "")
+            main_df[col] = file_df
             
-    print(main_df)
+
+
+        
+            
+    print(main_df.isna().sum())
     if os.path.exists(final_path):
         os.remove(final_path)
     main_df.to_parquet(final_path , engine='pyarrow')
