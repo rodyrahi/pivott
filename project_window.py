@@ -3,7 +3,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
 from select_file_widget import SelectFileWidget
-from custom_widgets import MainButton , Button
+from custom_widgets import MainButton , Button , CollapsibleButton
 from mian_interface import MainInterface
 from file_functions import create_json_file
 

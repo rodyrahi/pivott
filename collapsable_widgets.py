@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
-from custom_widgets import Button
+from custom_widgets import Button , CollapsibleButton
 
 
 
@@ -8,17 +8,14 @@ class CollapsableWidget(QWidget):
         def __init__(self, title ):
 
             super().__init__()
-
-            self.title = title + " ▼"
-            self.title_collapsed = title + " ▲"
-
+            self.title = title
             self.initUI()
 
         def initUI(self):
             self.main_layout = QVBoxLayout(self)
 
             # Create a button to toggle the collapsible content
-            self.toggle_button = Button(self.title, self)
+            self.toggle_button = CollapsibleButton(self.title, self)
             self.toggle_button.clicked.connect(self.toggleContent)
             self.main_layout.addWidget(self.toggle_button)
 
@@ -59,8 +56,7 @@ class CollapsableWidget(QWidget):
             # Toggle the visibility of the scroll area
             if self.scroll_area.isVisible():
                 self.scroll_area.setVisible(False)
-                self.toggle_button.setText(self.title)
+
             else:
                 self.scroll_area.setVisible(True)
-                self.toggle_button.setText(self.title_collapsed)
-            
+
