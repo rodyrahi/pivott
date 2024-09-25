@@ -148,7 +148,7 @@ def create_final_df(main_interface, main_df):
             main_df = main_df[~main_df.index.isin(file_df.index)]
 
         
-        elif 'impute' in file_path:
+        elif 'impute' in file_path or 'encode' in file_path:
             print("impute is called")
             col = file_path.split('-')[-1].replace(".parquet", "")
             main_df[col] = file_df

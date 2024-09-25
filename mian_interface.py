@@ -12,7 +12,8 @@ from table_widget import OptimizedTableWidget
 from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
-    imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file
+    imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
+    , encodingCategoryWidget
 
 
 
@@ -36,6 +37,7 @@ class MainInterface(QWidget):
         self.impute_checkboxes = []
         self.drop_column_checkboxes = []
         self.remove_outlier_checkboxes = []
+        self.encode_checkboxes =[]
 
 
         self.prepare_project()
@@ -86,6 +88,7 @@ class MainInterface(QWidget):
             ("Impute Missing", imputeMissingWidget ),
             ("Drop Columns", dropColumnWidget ),
             ("Remove Outliers", removeOutlierWidget),
+            ("Encode Categorical", encodingCategoryWidget ),
         ]
 
         scroll_area = QScrollArea()

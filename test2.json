@@ -13,5 +13,10 @@
     "remove_outlier": {
         "col": [],
         "strategy": []
+    },
+    "encode": {
+        "col": [],
+        "strategy": []
     }
+
 }

@@ -26,17 +26,13 @@ class CollapsableWidget(QWidget):
             self.scroll_area = QScrollArea(self)
             self.scroll_area.setWidgetResizable(True)
             self.scroll_area.setVisible(False)  # Initially hidden
+            # self.scroll_area.setMaximumHeight(500)  # Set maximum height
 
             # Create a widget to hold the checkboxes
             self.content_widget = QWidget()
             self.content_layout = QVBoxLayout(self.content_widget)
 
-            # Add some sample checkboxes
-            # for i in range(20):
-            #     checkbox = QCheckBox(f"Checkbox {i+1}") 
-            #     
-
-
+       
 
 
         def setWidgets(self, widgets , main_interface):

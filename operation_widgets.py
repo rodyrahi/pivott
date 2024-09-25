@@ -9,7 +9,9 @@ import numpy as np
 import pandas as pd
 
 
+from sklearn.calibration import LabelEncoder
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OrdinalEncoder
 
 
 
@@ -136,7 +138,6 @@ class imputeMissingWidget(featureWidget):
    
         else:
             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
-
 
 
 class dropColumnWidget(featureWidget):
@@ -297,7 +298,75 @@ class removeOutlierWidget(featureWidget):
             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}" , strategy=method)
 
 
+class encodingCategoryWidget(featureWidget):
+    def __init__(self, main_interface):
+        super().__init__(main_interface)
+      
+    def initUI(self):
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
+    
+        final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        if os.path.exists(final_df):
+            final_df = df_from_parquet(final_df)
+        else:
+            final_df = df_from_parquet(self.main_interface.current_df[0])
+        
+        columns = final_df.select_dtypes(include=['object', 'category']).columns.tolist()
 
+        for col in columns:
+            row_layout = QHBoxLayout()
+            
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            row_layout.addWidget(col_label)
+            
+            strategy_combo = QComboBox()
+            strategy_combo.addItems(["ordinal", "label" ])
+            strategy_combo.setCurrentIndex(0) 
+        
+            checkbox = QCheckBox("Encode")
+            checkbox.stateChanged.connect(lambda state, c=col, s=strategy_combo: self.encode_category(state=state, cols=[c], strategy=s.currentText()))
+            
+            row_layout.addWidget(strategy_combo)
+            row_layout.addWidget(checkbox)
+            self.main_interface.encode_checkboxes.append((f"encode-{col}", checkbox))
+
+            checkbox_map[("encode", col)] = checkbox  # Store the checkbox in the shared map
+             
+            layout.addLayout(row_layout)
+
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(layout)
+
+
+    def encode_category(self, state, df=None, cols=None, strategy=None, name="encode", checkbox=None):
+        df = set_df(df, self.main_interface)
+        
+
+        if state == 2 or state == True:
+            print("Encoding categorical values")
+        
+            if checkbox:
+                checkbox.blockSignals(True)
+                checkbox.setChecked(True)
+                checkbox.blockSignals(False)
+
+            
+            if strategy == "label":
+                le = LabelEncoder()
+                modified_df = pd.DataFrame(le.fit_transform(df[cols[0]]), columns=[cols[0]])
+                save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface, strategy)
+                self.main_interface.update_table()
+                
+            elif strategy == "ordinal":
+                oe = OrdinalEncoder()
+                modified_df = pd.DataFrame(oe.fit_transform(df[[cols[0]]]), columns=[cols[0]])
+
+                save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface, strategy)
+                self.main_interface.update_table()
+
+        else:
+            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
 
 class dropDuplicateWidget(QWidget):
     def __init__(self , main_interface):
@@ -381,6 +450,7 @@ def process_file(main_interface , config=None):
     impute = imputeMissingWidget(main_interface)
     drop_column = dropColumnWidget(main_interface)
     remove_outlier = removeOutlierWidget(main_interface)
+    encode = encodingCategoryWidget(main_interface)
 
 
     for operation, details in config.items():
@@ -418,3 +488,12 @@ def process_file(main_interface , config=None):
                     if checkbox[0] == f"remove_outlier-{col}-{strategy}":
                         df = remove_outlier.remove_outlier(state=True, df = df ,cols=[col] ,  checkbox=checkbox[1] , method=strategy)
 
+        if operation == "encode":
+            cols = details.get("col", [])
+            strategies = details.get("strategy", [])
+            for col, strategy in zip(cols, strategies):
+                for checkbox in main_interface.encode_checkboxes:
+                   
+                    if checkbox[0] == f"encode-{col}":
+                        
+                        df = encode.encode_category(state=True, df = df ,cols=[col] ,  checkbox=checkbox[1] , strategy=strategy)
