@@ -6,6 +6,9 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
+import polars as pl
+
+
 from custom_widgets import MainButton , Button
 # from dataframe_table import tableWidget
 from table_widget import OptimizedTableWidget
@@ -45,27 +48,34 @@ class MainInterface(QWidget):
 
     def prepare_project(self):
 
+        print("preparing project")
 
-
-        with open(self.project_path, 'r') as f:
-            self.project_data = json.load(f)
-
+        self.project_data = read_json_file(self.project_path)
         self.file_path = self.project_data["data_path"]
-        self.save_data_folder = f"{self.project_path.split('.')[0]}/save_data"
+
+
+        self.save_data_folder = f"{os.path.splitext(self.project_path)[0]}/save_data"
+        
         print(self.save_data_folder)
         create_folder(self.save_data_folder)
 
         self.cache_remove_files()
 
-        read_save_parquet(self.file_path, f"{self.save_data_folder}/df.parquet")
-        self.current_df = [f"{self.save_data_folder}/df.parquet"]
+        parquet_path = f"{self.save_data_folder}/df.parquet"
+
+        read_save_parquet(self.file_path, parquet_path)
+        self.current_df = [parquet_path]
+
         print(self.current_df)
+
         self.main_df = df_from_parquet(self.current_df[0])
+
+        print("project prepared")
 
         
     def initUI(self):
 
-    
+        
         main_layout = QHBoxLayout()
 
         self.table_layout = QVBoxLayout()
@@ -82,9 +92,9 @@ class MainInterface(QWidget):
         self.table_layout.addWidget(self.table_widget)
 
         self.table_layout.addLayout(self.table_bottom_layout)
-
+        
         features = [
-            ("Drop Duplicates" , dropDuplicateWidget),
+            # ("Drop Duplicates" , dropDuplicateWidget),
             ("Impute Missing", imputeMissingWidget ),
             ("Drop Columns", dropColumnWidget ),
             ("Remove Outliers", removeOutlierWidget),
@@ -96,17 +106,22 @@ class MainInterface(QWidget):
     
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout(scroll_widget)
+        
 
         for feature_name, feature_widget in features:
+            
             collapsible = CollapsableWidget(feature_name)
-            collapsible.setWidgets(feature_widget , self)
+            # collapsible.setWidgets(feature_widget , self)
+            collapsible.feature_widgets = feature_widget
+            collapsible.main_interface =  self
+            collapsible.setWidgets()
             scroll_layout.addWidget(collapsible)
-
+        
         scroll_area.setWidget(scroll_widget)
         self.properties_layout.addWidget(scroll_area)
 
         # self.table_layout.setSpacing(20) 
-
+      
         self.properties_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         main_layout.addLayout(self.table_layout, 70)
@@ -114,8 +129,11 @@ class MainInterface(QWidget):
 
         self.setLayout(main_layout)
 
-        process_file(self , read_json_file(self.project_path) )
+       
 
+        process_file(self , read_json_file(self.project_path) )
+ 
+       
 
 
     def cache_remove_files(self):

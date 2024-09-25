@@ -2,6 +2,9 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
+import polars as pl 
+
+
 from select_file_widget import SelectFileWidget
 from custom_widgets import MainButton , Button , CollapsibleButton
 from mian_interface import MainInterface
@@ -56,6 +59,15 @@ class ProjectWidget(QWidget):
         file_dialog = QFileDialog()
         project_path, _ = file_dialog.getOpenFileName(self, "Open a Project", "", "Project Files (*.json)")
         if project_path:
+            
+
+            # df = pl.read_csv(r"C:\Users\Raj\Downloads\202310-divvy-tripdata.csv")
+            # df.write_parquet("test_data.parquet", compression="zstd")
+
+            # df = pl.read_parquet("test_data.parquet")
+            # print(df)
+       
+
             main_interface = MainInterface(project_path=project_path)
 
             

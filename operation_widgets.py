@@ -50,15 +50,18 @@ def on_uncheck_checkbox(main_interface , name=None , strategy=None):
 
 checkbox_map = {}
 
+
+
 class featureWidget(QWidget):
     def __init__(self, main_interface):
         super().__init__()
         self.main_interface = main_interface
-        
+        self.columns = []
+
 
 
     def disable_checkbox(self, column_name, action_type):
-        key = (action_type, column_name)  # Create a key with action_type and column_name
+        key = (action_type, column_name)
         if key in checkbox_map:
             checkbox = checkbox_map[key]
             checkbox.setEnabled(False)
@@ -66,7 +69,7 @@ class featureWidget(QWidget):
             print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
     def enable_checkbox(self, column_name, action_type):
-        key = (action_type, column_name)  # Create a key with action_type and column_name
+        key = (action_type, column_name)
         if key in checkbox_map:
             checkbox = checkbox_map[key]
             checkbox.setEnabled(True)
@@ -81,13 +84,16 @@ class imputeMissingWidget(featureWidget):
     def initUI(self):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
-    
-        final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        if os.path.exists(final_df):
-            final_df = df_from_parquet(final_df)
-        else:
-            final_df = df_from_parquet(self.main_interface.current_df[0])
         
+       
+        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        # if os.path.exists(final_df):
+        #     final_df = df_from_parquet(final_df)
+        # else:
+        #     final_df = df_from_parquet(self.main_interface.current_df[0])
+        
+
+        final_df = self.main_interface.main_df
         columns = final_df.columns[final_df.isnull().any()].tolist()
 
         for col in columns:
@@ -149,12 +155,13 @@ class dropColumnWidget(featureWidget):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
     
-        final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        if os.path.exists(final_df):
-            final_df = df_from_parquet(final_df)
-        else:
-            final_df = df_from_parquet(self.main_interface.current_df[0])
+        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        # if os.path.exists(final_df):
+        #     final_df = df_from_parquet(final_df)
+        # else:
+        #     final_df = df_from_parquet(self.main_interface.current_df[0])
         
+        final_df = self.main_interface.main_df
         columns = final_df.columns.tolist()
 
         for col in columns:
@@ -219,14 +226,18 @@ class removeOutlierWidget(featureWidget):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
     
-        final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        if os.path.exists(final_df):
-            final_df = df_from_parquet(final_df)
-        else:
-            final_df = df_from_parquet(self.main_interface.current_df[0])
+        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        # if os.path.exists(final_df):
+        #     final_df = df_from_parquet(final_df)
+        # else:
+        #     final_df = df_from_parquet(self.main_interface.current_df[0])
         
+        final_df = self.main_interface.main_df
         columns = final_df.columns.tolist()
+        
 
+
+        print("getting columns")
         for col in columns:
             if pd.api.types.is_numeric_dtype(final_df[col]):
                 row_layout = QHBoxLayout()
@@ -257,7 +268,8 @@ class removeOutlierWidget(featureWidget):
                 
                 
                 layout.addLayout(row_layout)
-
+        
+        print("layout added")
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
@@ -306,12 +318,13 @@ class encodingCategoryWidget(featureWidget):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
     
-        final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        if os.path.exists(final_df):
-            final_df = df_from_parquet(final_df)
-        else:
-            final_df = df_from_parquet(self.main_interface.current_df[0])
+        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        # if os.path.exists(final_df):
+        #     final_df = df_from_parquet(final_df)
+        # else:
+        #     final_df = df_from_parquet(self.main_interface.current_df[0])
         
+        final_df = self.main_interface.main_df
         columns = final_df.select_dtypes(include=['object', 'category']).columns.tolist()
 
         for col in columns:
@@ -368,72 +381,71 @@ class encodingCategoryWidget(featureWidget):
         else:
             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
 
-class dropDuplicateWidget(QWidget):
+class dropDuplicateWidget(featureWidget):
     def __init__(self , main_interface):
-        super().__init__()
+        super().__init__(main_interface)
         self.main_interface = main_interface
-        self.initUI()
+        # self.initUI()
 
     def initUI(self):
-        print(self.main_interface.current_df)
-        self.checkbox = QCheckBox("Drop duplicates")
-        layout = QVBoxLayout()
-        layout.addWidget(self.checkbox)
-        # self.checkbox.stateChanged.connect(lambda  :self.drop_duplicates(self.checkbox.isChecked()))
-        self.checkbox.stateChanged.connect(lambda  :self.drop_na(self.checkbox.isChecked()))
 
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
+        
+       
+           
+        
+
+        columns = self.main_interface.main_df.columns.tolist()
+    
+        for col in columns:
+            row_layout = QHBoxLayout()
+            
+            # col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            # row_layout.addWidget(col_label)
+            
+            strategy_combo = QComboBox()
+            strategy_combo.addItems(["mean", "median", "most_frequent", "constant"])
+            strategy_combo.setCurrentIndex(0) 
+        
+            checkbox = QCheckBox("Impute")
+            checkbox.stateChanged.connect(lambda state, c=col, s=strategy_combo: self.impute_missing(state=state, cols=[c], strategy=s.currentText()))
+            
+            row_layout.addWidget(strategy_combo)
+            row_layout.addWidget(checkbox)
+            self.main_interface.impute_checkboxes.append((f"impute-{col}", checkbox))
+
+            checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
+             
+            layout.addLayout(row_layout)
 
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
-    def drop_duplicates(self , state):
+
+    def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
+        df = set_df(df, self.main_interface)
         
-        if state:
-            self.main_interface.current_df = self.main_interface.current_df.drop_duplicates()
+
+        if state == 2 or state == True:
+            print("Imputing missing values")
+        
+            if checkbox:
+                checkbox.blockSignals(True)
+                checkbox.setChecked(True)
+                checkbox.blockSignals(False)
+    
+            imputer = SimpleImputer(strategy=strategy)
+            df[cols] = imputer.fit_transform(df[cols])
+
+            modified_df = df[cols]
+            save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface, strategy)
             self.main_interface.update_table()
-
-
-
-    def drop_na(self , state , df=None, cols=None ,  name = "dropna"):
-        
-        if not df:
-            df = df_from_parquet(self.main_interface.current_df[-1])
-
-        if state:
             
-            # if cols:
-                self.checkbox.setChecked(True)
-                path = f"{self.main_interface.save_data_folder}/df_{name}.parquet"
-                print(path)
-                # if not os.path.exists(path) and not f"df_{name}.parquet" in self.main_interface.current_df:
-
-                modified_df = df.dropna()
-                self.main_interface.update_table(modified_df)
-                dropped_rows = df[~df.index.isin(modified_df.index)]
-                save_parquet_file(dropped_rows , name , self.main_interface )
-                
-                print(dropped_rows)
-                
+            print(modified_df)
+   
         else:
-            print("not checked")
-            # if f"df_{name}.parquet" in self.main_interface.current_df[-1]:
-
-            for i in self.main_interface.current_df:
-                print(i)
-                if f"df_{name}.parquet" in i:
-                    self.main_interface.current_df.remove(i)
-                    os.remove(i)
-
-
-            create_final_df(self.main_interface)
-            self.main_interface.update_table()
-
-            # if f"df_{name}.parquet" in self.main_interface.current_df[-1]:
-                
-            # modified_df = df.dropna()
-            # dropped_rows = df[df.isna().any(axis=1)]
-
-        # return dropped_rows
+            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
 
 
 

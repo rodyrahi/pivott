@@ -2,7 +2,7 @@ import gc
 import os
 import json
 import pandas as pd
-
+import polars as pl
 
 
 
@@ -86,15 +86,15 @@ def create_json_file(file_path, data=None):
 
 def read_save_parquet(file , save_path):
     try:
-        df = pd.read_csv(file)
-        df.to_parquet(save_path , engine='pyarrow')
+        df = pl.read_csv(file)
+        df.write_parquet(save_path )
     except:
-        df = pd.read_excel(file)
-        df.to_parquet(save_path , engine='pyarrow')
+        df = pl.read_excel(file)
+        df.write_parquet(save_path )
 
 
 def df_from_parquet(file):
-    df = pd.read_parquet(file)
+    df = pl.read_parquet(file).to_pandas()
     return df
 
 
@@ -104,7 +104,8 @@ def save_parquet_file(df, suffix , main_interface , strategy = None):
     if os.path.exists(filepath):
         os.remove(filepath)
 
-    df.to_parquet(filepath , engine='pyarrow')
+    pl.DataFrame(df).write_parquet(filepath)
+    # df.to_parquet(filepath)
     main_interface.current_df.append(filepath)
     print(f"File saved as {filepath}")
 
@@ -160,7 +161,9 @@ def create_final_df(main_interface, main_df):
     print(main_df.isna().sum())
     if os.path.exists(final_path):
         os.remove(final_path)
-    main_df.to_parquet(final_path , engine='pyarrow')
+
+    pl.DataFrame(main_df).write_parquet(final_path )
+    # main_df.to_parquet(final_path )
     print(f"Final DataFrame saved to {final_path}")
 
 
