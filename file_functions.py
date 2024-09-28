@@ -103,7 +103,7 @@ def df_from_parquet(file , engine = 'pandas'):
 
 def save_parquet_file(df, suffix , cols , main_interface , strategy = None):
 
-    print(cols , "columns when saving parquet")
+    print("save_parquet_file called")
 
     filepath = main_interface.current_df[0].replace(".parquet", f"_{suffix}.parquet")
     if os.path.exists(filepath):
@@ -169,11 +169,11 @@ def create_final_df(main_interface, main_df):
         
         elif 'impute' in file_path or 'encode' in file_path:
 
+            cols = data['encode']['col']
+            # cols = [col for col in cols if col in main_df.columns]
             file_df = df_from_parquet(file_path )
-
-            print("impute is called")
-            col = file_path.split('-')[-1].replace(".parquet", "")
-            main_df[col] = file_df
+            print(cols)
+            main_df[cols] = file_df
         
             
 

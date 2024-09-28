@@ -96,8 +96,8 @@ class MainInterface(QWidget):
         
         features = [
             # ("Drop Duplicates" , dropDuplicateWidget),
-            ("Impute Missing", imputeMissingWidget ),
             ("Drop Columns", dropColumnWidget ),
+            ("Impute Missing", imputeMissingWidget ),
             ("Remove Outliers", removeOutlierWidget),
             ("Encode Categorical", encodingCategoryWidget ),
         ]
