@@ -7,6 +7,7 @@ import os
 import glob
 import numpy as np
 import pandas as pd
+import polars as pl
 
 
 from sklearn.calibration import LabelEncoder
@@ -14,7 +15,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder
 
 
-
+from custom_widgets import smallButton
 from file_functions import read_save_parquet , df_from_parquet , save_parquet_file, create_final_df , read_json_file , \
     update_remove_json_file
 
@@ -94,7 +95,8 @@ class imputeMissingWidget(featureWidget):
         
 
         final_df = self.main_interface.main_df
-        columns = final_df.columns[final_df.isnull().any()].tolist()
+        columns = final_df.select(pl.all().is_null().any()).columns
+        print(columns)
 
         for col in columns:
             row_layout = QHBoxLayout()
@@ -111,7 +113,7 @@ class imputeMissingWidget(featureWidget):
             
             row_layout.addWidget(strategy_combo)
             row_layout.addWidget(checkbox)
-            self.main_interface.impute_checkboxes.append((f"impute-{col}", checkbox))
+            self.main_interface.impute_checkboxes.append((f"impute", checkbox))
 
             checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
              
@@ -137,7 +139,7 @@ class imputeMissingWidget(featureWidget):
             df[cols] = imputer.fit_transform(df[cols])
 
             modified_df = df[cols]
-            save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface, strategy)
+            save_parquet_file(modified_df, f"{name}", self.main_interface, strategy)
             self.main_interface.update_table()
             
             print(modified_df)
@@ -149,7 +151,7 @@ class imputeMissingWidget(featureWidget):
 class dropColumnWidget(featureWidget):
     def __init__(self, main_interface):
         super().__init__(main_interface)
-
+        self.columns_to_drop = []
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -162,7 +164,7 @@ class dropColumnWidget(featureWidget):
         #     final_df = df_from_parquet(self.main_interface.current_df[0])
         
         final_df = self.main_interface.main_df
-        columns = final_df.columns.tolist()
+        columns = final_df.columns
 
         for col in columns:
             row_layout = QHBoxLayout()
@@ -172,8 +174,8 @@ class dropColumnWidget(featureWidget):
             
         
             checkbox = QCheckBox("Drop Column")
-            checkbox.stateChanged.connect(lambda state, c=col: self.drop_column(state=state, cols=[c]))
-            
+            # checkbox.stateChanged.connect(lambda state, c=col: self.drop_column(state=state, cols=[c]))
+            checkbox.stateChanged.connect(lambda state , col=col : self.add_columns(col=col , state=state  ))
 
             row_layout.addWidget(checkbox)
             self.main_interface.drop_column_checkboxes.append((f"drop_column-{col}", checkbox))
@@ -185,38 +187,98 @@ class dropColumnWidget(featureWidget):
             layout.addLayout(row_layout)
 
         
+                # Create Apply and Clear All buttons
+        button_layout = QHBoxLayout()
+        
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(lambda: self.drop_column(state=True , cols=self.columns_to_drop))
+      
+        
+        clear_all_button = smallButton("Clear All")
+
+        clear_all_button.clicked.connect(self.clear_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+        # button_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        layout.addLayout(button_layout)
+        
+
+        
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
+    def add_columns(self , col , state=False):
+        if state == 2 or state == True:
+                
+            self.columns_to_drop.append(col)
+            print("col appended " , col)
+
+            self.disable_checkbox(col , 'impute')
+            self.disable_checkbox(col , 'iqr')    
+        else:
+            self.columns_to_drop.remove(col)
+            print("col removed" , col)
+            self.enable_checkbox(col , 'impute')
+            self.enable_checkbox(col , 'iqr')    
+
+
+
 
     def drop_column(self, state, df=None, cols=None, strategy=None, name="drop_column", checkbox=None):
-        df = set_df(df, self.main_interface)
+        # df = set_df(df, self.main_interface)
+        df = self.main_interface.main_df
 
-        if state == 2 or state == True:
+
+        # final_df_path = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        # if os.path.exists(final_df_path):
+        #     df = df_from_parquet(final_df_path)
+        # else:
+        #     df = self.main_interface.main_df
+
+
+        if state == 2 or state == True :
             print("Dropping column(s)")
         
             if checkbox:
                 checkbox.blockSignals(True)
                 checkbox.setChecked(True)
                 checkbox.blockSignals(False)
-
+            
+            
+            
+                       
+                             
+       
+            
             if cols:
-                dropped_columns = df[cols].copy()
-                df = df.drop(columns=cols)
+                
+                cols = [col for col in cols if col in df.columns]
+              
+                print(df.columns)
+                dropped_columns = df.select(cols)
+                
 
-            save_parquet_file(dropped_columns, f"{name}-{cols[0]}", self.main_interface)
-            self.main_interface.update_table()
+                save_parquet_file(dropped_columns, f"{name}",cols , self.main_interface)
+                self.main_interface.update_table()
 
-            self.disable_checkbox(cols[0] , 'impute')
-            self.disable_checkbox(cols[0] , 'iqr')    
+               
 
-            print(f"Dropped column(s): {cols}")
+                print(f"Dropped column(s): {cols}")
    
-        else:
-            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}")
-            self.enable_checkbox(cols[0] , 'impute')
-            self.enable_checkbox(cols[0] , 'iqr')    
+            else:
+                print("uncecked")
+                on_uncheck_checkbox(self.main_interface, name=f"{name}", strategy=strategy)
+           
+            
+            
 
+        
+    def clear_all(self):
+        # Uncheck all checkboxes
+        for name, checkbox in self.main_interface.drop_column_checkboxes:
+            checkbox.setChecked(False)
+        # self.main_interface.update_table()
 
 class removeOutlierWidget(featureWidget):
     def __init__(self, main_interface):
@@ -233,7 +295,7 @@ class removeOutlierWidget(featureWidget):
         #     final_df = df_from_parquet(self.main_interface.current_df[0])
         
         final_df = self.main_interface.main_df
-        columns = final_df.columns.tolist()
+        columns = final_df.columns
         
 
 
@@ -325,7 +387,8 @@ class encodingCategoryWidget(featureWidget):
         #     final_df = df_from_parquet(self.main_interface.current_df[0])
         
         final_df = self.main_interface.main_df
-        columns = final_df.select_dtypes(include=['object', 'category']).columns.tolist()
+        columns = final_df.schema
+        columns = [col for col, dtype in columns.items() if dtype in [pl.Utf8, pl.Categorical]]
 
         for col in columns:
             row_layout = QHBoxLayout()
@@ -356,7 +419,7 @@ class encodingCategoryWidget(featureWidget):
         df = set_df(df, self.main_interface)
         
 
-        if state == 2 or state == True:
+        if state == 2 or state == True and len(cols) > 0:
             print("Encoding categorical values")
         
             if checkbox:
@@ -482,13 +545,23 @@ def process_file(main_interface , config=None):
 
         if operation == "drop_column":
             cols = details.get("col", [])
-            
+                     
             for col in cols:
                 for checkbox in main_interface.drop_column_checkboxes:
                     if checkbox[0] == f"drop_column-{col}":
-                        
-                        df = drop_column.drop_column(state=True, df = df ,cols=[col] , checkbox=checkbox[1])
-       
+
+                        checkbox[1].blockSignals(True)
+                        checkbox[1].setChecked(True)
+                        checkbox[1].blockSignals(False)
+                        checkbox[1].parent().columns_to_drop.append(col)
+
+            
+            df = drop_column.drop_column(state=True, df = df ,cols= cols)
+           
+
+          
+
+
         if operation == "remove_outlier":
             
             cols = details.get("col", [])

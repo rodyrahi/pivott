@@ -17,6 +17,13 @@ class Button(QPushButton):
         self.setStyleSheet("padding: 10px;")
         self.setFixedWidth(150)
 
+
+class smallButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("padding: 5px; font-size:12px")
+        self.setFixedWidth(100)
+
 class CollapsibleButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)

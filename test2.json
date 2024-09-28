@@ -1,12 +1,16 @@
 {
     "data_path": "F:/pivott/pivott/test_data.csv",
     "drop_column": {
-        "col": []
+        "file_location":"",
+        "col": [
+            "County"
+        ]
     },
     "dropna": {
         "col": []
     },
     "impute": {
+        "file_location":"",
         "col": [],
         "strategy": []
     },
@@ -15,7 +19,11 @@
         "strategy": []
     },
     "encode": {
-        "col": [],
-        "strategy": []
+        "col": [
+            "Clean Alternative Fuel Vehicle (CAFV) Eligibility"
+        ],
+        "strategy": [
+            "ordinal"
+        ]
     }
 }

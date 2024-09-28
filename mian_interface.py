@@ -36,6 +36,7 @@ class MainInterface(QWidget):
         self.current_df = []
         self.dataframe_columns = []
         self.main_df = None
+        self.final_df = None
 
         self.impute_checkboxes = []
         self.drop_column_checkboxes = []
@@ -86,7 +87,7 @@ class MainInterface(QWidget):
     
         self.update_table(self.main_df)
 
-        self.dataframe_columns = self.main_df.columns.to_list()
+        self.dataframe_columns = self.main_df.columns
         print(self.dataframe_columns)
 
         self.table_layout.addWidget(self.table_widget)

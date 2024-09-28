@@ -3,21 +3,21 @@ import os
 import json
 import pandas as pd
 import polars as pl
+from functools import cache
 
 
+def update_add_json_file(main_interface , suffix , strategy , parquet_file , cols):
 
-
-def update_add_json_file(main_interface , suffix , strategy):
-
-    col = suffix.split('-')[-1]
+    # col = suffix.split('-')[-1]
     feature = suffix.split('-')[0]
-    print(col)
+    # print(col)
     data = read_json_file(main_interface.project_path)
 
    
-
-    if col not in data[feature]['col']:
-        data[feature]['col'].append(col)
+    
+    data[feature]['file'] = parquet_file
+    if cols not in data[feature]['col']:
+        data[feature]['col'] = cols
 
     if strategy and not len(data[feature]['strategy']) == len(data[feature]['col']):
         data[feature]['strategy'].append(strategy)
@@ -93,26 +93,34 @@ def read_save_parquet(file , save_path):
         df.write_parquet(save_path )
 
 
-def df_from_parquet(file):
-    df = pl.read_parquet(file).to_pandas()
+def df_from_parquet(file , engine = 'pandas'):
+    if engine == 'pandas':
+        df = pl.read_parquet(file)
+    else:
+        df = pl.read_parquet(file)
     return df
 
 
-def save_parquet_file(df, suffix , main_interface , strategy = None):
+def save_parquet_file(df, suffix , cols , main_interface , strategy = None):
+
+    print(cols , "columns when saving parquet")
 
     filepath = main_interface.current_df[0].replace(".parquet", f"_{suffix}.parquet")
     if os.path.exists(filepath):
         os.remove(filepath)
 
-    pl.DataFrame(df).write_parquet(filepath)
-    # df.to_parquet(filepath)
+  
+    df.write_parquet(filepath , compression="zstd")
+
     main_interface.current_df.append(filepath)
     print(f"File saved as {filepath}")
 
-    print(main_interface.main_df.shape)
+    update_add_json_file(main_interface , suffix , strategy , filepath , cols)
+
+    
+    
     create_final_df(main_interface , main_interface.main_df )
     
-    update_add_json_file(main_interface , suffix , strategy)
     
 
 
@@ -127,43 +135,56 @@ def create_final_df(main_interface, main_df):
     if os.path.exists(final_path):
         os.remove(final_path)
 
-    main_df = main_df.copy()
+    
+    main_df = main_df.clone()
     # main_df = df_from_parquet(current_df[0].replace("df.parquet", "final_df.parquet"))
     
-    print(main_interface.current_df)
+   
+    data = read_json_file(main_interface.project_path)
+
+   
+
+
     for file_path in main_interface.current_df:
 
-        file_df = df_from_parquet(file_path)
-
         if 'dropna' in file_path:
+            file_df = df_from_parquet(file_path)
             main_df = main_df[~main_df.index.isin(file_df.index)]
 
         elif 'drop_column' in file_path:
-            col = file_path.split('-')[-1].replace(".parquet", "")
-            # print(col)
-            main_df = main_df.drop(col, axis=1)
+            
+            cols = data['drop_column']['col']
+            cols = [col for col in cols if col in main_df.columns]
+            print(cols , "create final df")
+            main_df = main_df.drop(cols)
+     
+
 
         elif 'remove_outlier' in file_path:
+            file_df = df_from_parquet(file_path)
             col = file_path.split('-')[-1].replace(".parquet", "")
   
             main_df = main_df[~main_df.index.isin(file_df.index)]
 
         
         elif 'impute' in file_path or 'encode' in file_path:
+
+            file_df = df_from_parquet(file_path )
+
             print("impute is called")
             col = file_path.split('-')[-1].replace(".parquet", "")
             main_df[col] = file_df
+        
             
 
 
         
             
-    print(main_df.isna().sum())
+    
     if os.path.exists(final_path):
         os.remove(final_path)
 
-    pl.DataFrame(main_df).write_parquet(final_path )
-    # main_df.to_parquet(final_path )
+    main_df.write_parquet(final_path , compression="zstd")
     print(f"Final DataFrame saved to {final_path}")
 
 
