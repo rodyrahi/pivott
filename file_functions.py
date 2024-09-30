@@ -26,15 +26,15 @@ def update_add_json_file(main_interface , suffix , strategy , parquet_file , col
         json.dump(data, json_file, indent=4)
     print(f"Updated {feature} in JSON: {data[feature]}")
 
-def update_remove_json_file(main_interface , suffix , strategy):
+def update_remove_json_file(main_interface , suffix ,strategy):
 
     col = suffix.split('-')[-1]
     feature = suffix.split('-')[0]
-    print(col)
+    # print(col)
     data = read_json_file(main_interface.project_path)
 
-    if col in data[feature]['col']:
-        data[feature]['col'].remove(col)
+    if data[feature]['col']:
+        data[feature]['col'] = []
 
     if strategy and strategy in data[feature]['strategy']:
         data[feature]['strategy'].remove(strategy)

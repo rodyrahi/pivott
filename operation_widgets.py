@@ -622,6 +622,4 @@ def process_file(main_interface , config=None):
                         checkbox[1].blockSignals(False)
                         checkbox[1].parent().columns_to_encode.append(col)
 
-
-                        
-            df = encode.encode_category(state=True, df = df ,cols=[col]  , strategy=strategy)
+            df = encode.encode_category(state=True, df = df ,cols=cols  , strategy=strategies)
