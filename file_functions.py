@@ -161,10 +161,25 @@ def create_final_df(main_interface, main_df):
 
 
         elif 'remove_outlier' in file_path:
-            file_df = df_from_parquet(file_path)
-            col = file_path.split('-')[-1].replace(".parquet", "")
+            # cols = data['encode']['col']
+            # cols = [col for col in cols if col in main_df.columns]
+            file_df = df_from_parquet(file_path )
+            # print(cols)
+            # main_df[cols] = file_df
+
+
+            # file_df = df_from_parquet(file_path)
+            # col = file_path.split('-')[-1].replace(".parquet", "")
   
-            main_df = main_df[~main_df.index.isin(file_df.index)]
+            # Create a new column in both DataFrames that concatenates all columns into a single string
+            main_df = main_df.with_columns(pl.concat_str(main_df.columns).alias("concat_all"))
+            file_df = file_df.with_columns(pl.concat_str(file_df.columns).alias("concat_all"))
+
+            # Perform an anti-join based on the concatenated column
+            main_df_filtered = main_df.join(file_df, how="anti", on="concat_all")
+
+            # Drop the 'concat_all' column after the join, if no longer needed
+            main_df = main_df_filtered.drop("concat_all")
 
         
         elif 'impute' in file_path or 'encode' in file_path:

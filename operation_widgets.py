@@ -260,93 +260,105 @@ class dropColumnWidget(featureWidget):
 class removeOutlierWidget(featureWidget):
     def __init__(self, main_interface):
         super().__init__(main_interface)
+        self.columns_to_remove_outliers = []
 
     def initUI(self):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
-    
-        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        # if os.path.exists(final_df):
-        #     final_df = df_from_parquet(final_df)
-        # else:
-        #     final_df = df_from_parquet(self.main_interface.current_df[0])
-        
+
         final_df = self.main_interface.main_df
         columns = final_df.columns
-        
 
-
-        print("getting columns")
+        print("getting columns for removing outliers")
         for col in columns:
-            if pd.api.types.is_numeric_dtype(final_df[col]):
+            if pl.Series(final_df[col]).dtype.is_numeric():
                 row_layout = QHBoxLayout()
-                
+
                 col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
                 row_layout.addWidget(col_label)
 
-                
-                
                 method_dropdown = QComboBox()
                 method_dropdown.addItems(["IQR", "Z-Score"])
                 
                 remove_checkbox = QCheckBox("Remove Outliers")
-                remove_checkbox.stateChanged.connect(lambda state, c=col , method = method_dropdown.currentText().lower() : self.remove_outlier(state=state, cols=[c], method=method))
-                
+                remove_checkbox.stateChanged.connect(
+                    lambda state, c=col, method_dropdown=method_dropdown: self.add_columns(
+                        col=c, state=state, method=method_dropdown.currentText().lower()
+                    )
+                )
                 row_layout.addWidget(method_dropdown)
                 row_layout.addWidget(remove_checkbox)
+                self.main_interface.remove_outlier_checkboxes.append((f"remove_outlier-{col}", remove_checkbox))
 
-                if method_dropdown.currentText().lower() == "iqr":
-                    self.main_interface.remove_outlier_checkboxes.append((f"remove_outlier-{col}-iqr", remove_checkbox))
-                    checkbox_map[("remove_outlier-iqr", col)] = remove_checkbox
-
-                elif method_dropdown.currentText().lower() == "z-score":
-                    self.main_interface.remove_outlier_checkboxes.append((f"remove_outlier-{col}-zscore", remove_checkbox))
-                    checkbox_map[("remove_outlier-zscore", col)] = remove_checkbox
-
-                
-                
+                checkbox_map[("remove_outlier", col)] = remove_checkbox  # Store in shared checkbox map
                 
                 layout.addLayout(row_layout)
-        
-        print("layout added")
+
+        button_layout = QHBoxLayout()
+
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(lambda: self.remove_outlier(state=True, cols=self.columns_to_remove_outliers))
+
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.clicked.connect(self.clear_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+
+        layout.addLayout(button_layout)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
-    def remove_outlier(self, state, df=None, cols=None, method='iqr', name="remove_outlier", checkbox=None):
-        df = set_df(df, self.main_interface)
-        
-        if state == 2 or state == True:
-            print(f"Removing outliers using {method}")
-        
-            if checkbox:
-                checkbox.blockSignals(True)
-                checkbox.setChecked(True)
-                checkbox.blockSignals(False)
+    def add_columns(self, col, state=False, method="iqr"):
+        if state == 2 or state is True:
+            self.columns_to_remove_outliers.append((col, method))
+            print(f"Column {col} added for outlier removal using {method}")
+            self.disable_checkbox(col, 'drop_column')  # Disable conflicting operations
+        else:
+            self.columns_to_remove_outliers = [(c, m) for c, m in self.columns_to_remove_outliers if c != col]
+            print(f"Column {col} removed from outlier removal")
+            self.enable_checkbox(col, 'drop_column')
 
+    def remove_outlier(self, state, df=None, cols=None , methoh=None , name="remove_outlier", checkbox=None):
+        df = self.main_interface.main_df
+
+        if state == 2 or state is True:
+            print(f"Removing outliers from columns: {cols}")
+            
             if cols:
-                for col in cols:
+                for col, method in cols:
                     if method == 'iqr':
-                        Q1 = df[col].quantile(0.25)
-                        Q3 = df[col].quantile(0.75)
+                        # Calculate IQR
+                        Q1 = df.select(pl.col(col).quantile(0.25)).item()
+                        Q3 = df.select(pl.col(col).quantile(0.75)).item()
                         IQR = Q3 - Q1
                         lower_bound = Q1 - 1.5 * IQR
                         upper_bound = Q3 + 1.5 * IQR
-                        # df[col] = df[col].clip(lower_bound, upper_bound)
 
-                        modified_df = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
-
+                        # Filter rows using Polars' .filter() method
+                        modified_df = df.filter((pl.col(col) >= lower_bound) & (pl.col(col) <= upper_bound))
+                    
                     elif method == 'zscore':
-                        z_scores = np.abs((df[col] - df[col].mean()) / df[col].std())
-                        df[col] = df[col].mask(z_scores > 3, df[col].mean())
+                        # Calculate Z-Score
+                        mean = df.select(pl.col(col).mean()).item()
+                        std_dev = df.select(pl.col(col).std()).item()
+                        z_scores = df.with_column(((pl.col(col) - mean) / std_dev).abs().alias("z_score"))
+                        
+                        # Filter rows where z_score is <= 3
+                        modified_df = z_scores.filter(pl.col("z_score") <= 3).drop("z_score")
 
+                
+                save_parquet_file(modified_df, f"{name}", cols ,self.main_interface, strategy=method)
+                self.main_interface.update_table()
 
-            save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface , strategy=method)
-            self.main_interface.update_table()
+                print(f"Removed outliers from column(s): {cols} using {method}")
+      
+            else:
+            
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
 
-            print(f"Removed outliers from column(s): {cols} using {method}")
-   
-        else:
-            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}" , strategy=method)
+    def clear_all(self):
+        for name, checkbox in self.main_interface.remove_outlier_checkboxes:
+            checkbox.setChecked(False)
 
 
 class encodingCategoryWidget(featureWidget):
@@ -379,7 +391,7 @@ class encodingCategoryWidget(featureWidget):
             strategy_combo.setCurrentIndex(0) 
         
             checkbox = QCheckBox("Encode")
-            checkbox.stateChanged.connect(lambda state, col=col, s=strategy_combo: self.add_columns(state=state, col=col))
+            checkbox.stateChanged.connect(lambda state, col=col, s=strategy_combo: self.add_columns(state=state, col=col , method=s.currentText().lower()))
             
             row_layout.addWidget(strategy_combo)
             row_layout.addWidget(checkbox)
@@ -425,6 +437,8 @@ class encodingCategoryWidget(featureWidget):
                 checkbox.setChecked(True)
                 checkbox.blockSignals(False)
 
+
+            cols = [col for col, method in cols]
             if  cols:
 
                 if strategy == "label":
@@ -435,6 +449,7 @@ class encodingCategoryWidget(featureWidget):
                     
                 elif strategy == "ordinal":
                     oe = OrdinalEncoder()
+                    print(cols)
                     numpy_array = df[cols].to_numpy()
 
                     # Apply OrdinalEncoder and transform the column
@@ -449,22 +464,25 @@ class encodingCategoryWidget(featureWidget):
 
             else:
                 print("uncecked")
-                on_uncheck_checkbox(self.main_interface, name=f"{name}", strategy=strategy)
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
        
 
-    def add_columns(self , col , state=False):
-        if state == 2 or state == True:
-                
-            self.columns_to_encode.append(col)
-            print("col appended " , col)
-
+    def add_columns(self, col, state=False, method=None):
+        if state == 2 or state is True:
+            self.columns_to_encode.append((col, method))
+            print(f"Column {col} added for outlier removal using {method}")
+            self.disable_checkbox(col, 'drop_column')  # Disable conflicting operations
         else:
-            self.columns_to_encode.remove(col)
-            print("col removed" , col)
+            self.columns_to_encode = [(c, m) for c, m in self.columns_to_encode if c != col]
+            print(f"Column {col} removed from outlier removal")
+            self.enable_checkbox(col, 'drop_column')
 
     def clear_all(self):
         for name, checkbox in self.main_interface.encode_checkboxes:
             checkbox.setChecked(False)
+
+
+
 
 class dropDuplicateWidget(featureWidget):
     def __init__(self , main_interface):

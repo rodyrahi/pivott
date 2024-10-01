@@ -1,0 +1,22 @@
+{
+    "data_path": "F:/pivott/pivott/test_data.csv",
+    "drop_column": {
+        "col": [
+            "VIN (1-10)",
+            "County",
+            "City"
+        ],
+        "file": "F:/pivott/pivott/new_project2/save_data/df_drop_column.parquet"
+    },
+    "dropna": {
+        "col": []
+    },
+    "impute": {
+        "col": [],
+        "strategy": []
+    },
+    "remove_outlier": {
+        "col": [],
+        "strategy": []
+    }
+}

@@ -1,29 +1,33 @@
 {
     "data_path": "F:/pivott/pivott/test_data.csv",
     "drop_column": {
-        "file_location":"",
-        "col": [
-            "County"
-        ]
+        "file_location": "",
+        "col": [],
+        "file": "F:/pivott/pivott/test2/save_data/df_drop_column.parquet"
     },
     "dropna": {
         "col": []
     },
     "impute": {
-        "file_location":"",
+        "file_location": "",
         "col": [],
         "strategy": []
     },
     "remove_outlier": {
         "col": [],
-        "strategy": []
+        "strategy": [
+            "iqr",
+            "iqr",
+            "iqr",
+            "iqr"
+        ],
+        "file": "F:/pivott/pivott/test2/save_data/df_remove_outlier.parquet"
     },
     "encode": {
-        "col": [
-            "Clean Alternative Fuel Vehicle (CAFV) Eligibility"
-        ],
+        "col": [],
         "strategy": [
             "ordinal"
-        ]
+        ],
+        "file": "F:/pivott/pivott/test2/save_data/df_encode.parquet"
     }
 }
