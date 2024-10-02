@@ -7,7 +7,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
 import polars as pl
-
+import numpy as np
 
 from custom_widgets import MainButton , Button
 # from dataframe_table import tableWidget
