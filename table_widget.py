@@ -7,14 +7,10 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-
-
-
 class OptimizedTableModel(QAbstractTableModel):
     def __init__(self, data):
         super().__init__()
-        
-        self._data = np.array(data)
+        self._data = data
         self._columns = data.columns if hasattr(data, 'columns') else [f"Column {i+1}" for i in range(self._data.shape[1])]
 
     def rowCount(self, parent=QModelIndex()):
@@ -45,7 +41,7 @@ class OptimizedTableWidget(QTableView):
             super().__init__(parent)
             self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
             self.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
-            self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+            self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
             self.setAlternatingRowColors(True)
             # self.setSortingEnabled(True)
             self.setWordWrap(False)
@@ -55,14 +51,14 @@ class OptimizedTableWidget(QTableView):
 
         def setData(self, data):
             self.dataframe = data
+            # self.dataframe = data.to_pandas()
             model = OptimizedTableModel(data)
             self.setModel(model)
 
         def show_unique_values(self, pos):
-            
             logical_index = self.horizontalHeader().logicalIndexAt(pos)
             column_name = self.dataframe.columns[logical_index]
-            # value_counts = self.dataframe[column_name].value_counts().sort_index()
+            value_counts = self.dataframe[column_name].value_counts().sort_index()
 
             # Create a context menu
             context_menu = QMenu(self)
@@ -74,19 +70,18 @@ class OptimizedTableWidget(QTableView):
             # Gather column info
             column_info = f"Column Name: {column_name}\n"
             column_info += f"Data Type: {self.dataframe[column_name].dtype}\n"
-            column_info += f"Number of Null Values: {self.dataframe[column_name].is_null().sum()}\n"
-            column_info += f"Number of Unique Values: {self.dataframe[column_name].n_unique()}\n"
+            column_info += f"Number of Null Values: {self.dataframe[column_name].isnull().sum()}\n"
+            column_info += f"Number of Unique Values: {self.dataframe[column_name].nunique()}\n"
 
-            if self.dataframe[column_name].dtype in ['Int64', 'Float64']:
+            if self.dataframe[column_name].dtype in ['int64', 'float64']:
                 column_info += f"Min Value: {self.dataframe[column_name].min()}\n"
                 column_info += f"Max Value: {self.dataframe[column_name].max()}\n"
                 column_info += f"Mean: {self.dataframe[column_name].mean():.2f}\n"
                 column_info += f"Median: {self.dataframe[column_name].median()}\n"
                 column_info += f"Standard Deviation: {self.dataframe[column_name].std():.2f}\n"
             else:
-                pass
-                # column_info += f"Most Common Value: {self.dataframe[column_name].mode().iloc[0]}\n"
-                # column_info += f"Least Common Value: {value_counts.index[-1]}\n"
+                column_info += f"Most Common Value: {self.dataframe[column_name].mode().iloc[0]}\n"
+                column_info += f"Least Common Value: {value_counts.index[-1]}\n"
 
             info_edit.setText(column_info)
             info_edit.setMaximumSize(300, 150)  # Set a maximum size for the info edit
@@ -142,4 +137,3 @@ class OptimizedTableWidget(QTableView):
         def filter_table(self, column_name, value, state):
             # Implement the filtering logic here
             pass
-

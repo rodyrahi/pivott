@@ -75,6 +75,14 @@ def create_json_file(file_path, data=None):
                 "strategy": [
                    
                 ]
+            },
+            "encode":{
+                "col": [
+
+                ],
+                "strategy": [
+
+                ]
             }
 
         }
@@ -109,7 +117,7 @@ def save_parquet_file(df, suffix , cols , main_interface , strategy = None):
     if os.path.exists(filepath):
         os.remove(filepath)
 
-  
+    print(df)
     df.write_parquet(filepath , compression="zstd")
 
     main_interface.current_df.append(filepath)
@@ -182,23 +190,36 @@ def create_final_df(main_interface, main_df):
             main_df = main_df_filtered.drop("concat_all")
 
         
-        elif 'impute' in file_path or 'encode' in file_path:
+        elif 'impute' in file_path:
 
+            cols = data['impute']['col']
+            file_df = df_from_parquet(file_path)
+            cols = [col for col, method in cols]
+            
+            # Ensure we only use columns that exist in both dataframes
+            common_cols = [col for col in cols if col in main_df.columns and col in file_df.columns]
+            
+            # Replace columns in main_df with columns from file_df
+            main_df = main_df.with_columns(
+                file_df.select(common_cols)
+            )
+        elif 'encode' in file_path:
             cols = data['encode']['col']
-            # cols = [col for col in cols if col in main_df.columns]
+           
             file_df = df_from_parquet(file_path )
             print(cols)
             main_df[cols] = file_df
         
+        
             
 
 
         
             
-    
+
     if os.path.exists(final_path):
         os.remove(final_path)
-
+    
     main_df.write_parquet(final_path , compression="zstd")
     print(f"Final DataFrame saved to {final_path}")
 

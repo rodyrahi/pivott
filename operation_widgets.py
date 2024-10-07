@@ -79,74 +79,267 @@ class featureWidget(QWidget):
             print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
 
+
+# class imputeMissingWidget(featureWidget):
+#     def __init__(self, main_interface):
+#         super().__init__(main_interface)
+#         self.columns_to_impute = []
+      
+#     def initUI(self):
+#         layout = QVBoxLayout()
+#         final_df = self.main_interface.main_df
+#         columns = final_df.schema
+#         columns = [col for col in columns if final_df[col].is_null().any()]
+#         for col in columns:
+#             row_layout = QHBoxLayout()
+            
+#             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+#             row_layout.addWidget(col_label)
+            
+#             strategy_combo = QComboBox()
+#             strategy_combo.addItems(["mean", "median", "mode", "constant"])
+#             strategy_combo.setCurrentIndex(0) 
+        
+#             checkbox = QCheckBox("Impute")
+#             checkbox.stateChanged.connect(lambda state, col=col, s=strategy_combo: self.add_columns(state=state, col=col, method=s.currentText().lower()))
+            
+#             row_layout.addWidget(strategy_combo)
+#             row_layout.addWidget(checkbox)
+#             self.main_interface.impute_checkboxes.append((f"impute-{col}", checkbox))
+
+#             checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
+             
+#             layout.addLayout(row_layout)
+
+#         button_layout = QHBoxLayout()
+        
+#         apply_button = smallButton("Apply")
+#         apply_button.clicked.connect(lambda: self.impute_missing_values(state=True, cols=self.columns_to_impute, strategy=strategy_combo.currentText().lower()))
+      
+#         clear_all_button = smallButton("Clear All")
+#         clear_all_button.clicked.connect(self.clear_all)
+#         button_layout.addWidget(clear_all_button)
+#         button_layout.addWidget(apply_button)
+
+#         layout.addLayout(button_layout)
+        
+#         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+#         self.setLayout(layout)
+
+#     def impute_missing_values(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
+#         df = set_df(df, self.main_interface)
+        
+#         if state == 2 or state == True:
+#             if checkbox:
+#                 checkbox.blockSignals(True)
+#                 checkbox.setChecked(True)
+#                 checkbox.blockSignals(False)
+
+           
+#             print(cols)
+#             if cols:
+#                 modified_df = df.clone()
+#                 for col , strategy in cols:
+#                     if strategy == "mean":
+#                         fill_value = df[col].mean()
+#                         print(fill_value)
+#                     elif strategy == "median":
+#                         fill_value = df[col].median()
+#                     elif strategy == "mode":
+#                         fill_value = df[col].mode()[0]
+#                         print(fill_value)
+#                     elif strategy == "constant":
+#                         fill_value = 0  # You can change this to any constant value
+
+#                     modified_df = modified_df.with_columns(pl.col(col).fill_null(fill_value))
+
+#                 cols_for_df = [col for col , method in cols]
+#                 print(f"Imputing missing values for {cols}")
+#                 save_parquet_file(modified_df[cols_for_df], f"{name}", cols, self.main_interface, strategy)
+#                 self.main_interface.update_table()
+#             else:
+#                 print("unchecked")
+#                 on_uncheck_checkbox(self.main_interface, name=f"{name}")
+
+#     def add_columns(self, col, state=False, method=None):
+#         if state == 2 or state is True:
+#             self.columns_to_impute.append((col, method))
+#             print(f"Column {col} added for imputation using {method}")
+#         else:
+#             self.columns_to_impute = [(c, m) for c, m in self.columns_to_impute if c != col]
+#             print(f"Column {col} removed from imputation")
+
+#     def clear_all(self):
+#         for name, checkbox in self.main_interface.impute_checkboxes:
+#             checkbox.setChecked(False)
+
+
 class imputeMissingWidget(featureWidget):
     def __init__(self, main_interface):
         super().__init__(main_interface)
-      
+        self.columns_to_impute = []
+
     def initUI(self):
         layout = QVBoxLayout()
         print(self.main_interface.current_df)
-        
-       
-        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        # if os.path.exists(final_df):
-        #     final_df = df_from_parquet(final_df)
-        # else:
-        #     final_df = df_from_parquet(self.main_interface.current_df[0])
-        
 
         final_df = self.main_interface.main_df
-        columns = final_df.select(pl.all().is_null().any()).columns
-        print(columns)
+        columns = final_df.schema
+        columns = [col for col in columns if final_df[col].is_null().any()]
 
+        print("getting columns for imputing missing values")
         for col in columns:
             row_layout = QHBoxLayout()
-            
+
             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
             row_layout.addWidget(col_label)
-            
+
             strategy_combo = QComboBox()
             strategy_combo.addItems(["mean", "median", "most_frequent", "constant"])
-            strategy_combo.setCurrentIndex(0) 
-        
-            checkbox = QCheckBox("Impute")
-            checkbox.stateChanged.connect(lambda state, c=col, s=strategy_combo: self.impute_missing(state=state, cols=[c], strategy=s.currentText()))
             
+            impute_checkbox = QCheckBox("Impute")
+            impute_checkbox.stateChanged.connect(
+                lambda state, c=col, strategy_combo=strategy_combo: self.add_columns(
+                    col=c, state=state, strategy=strategy_combo.currentText()
+                )
+            )
             row_layout.addWidget(strategy_combo)
-            row_layout.addWidget(checkbox)
-            self.main_interface.impute_checkboxes.append((f"impute", checkbox))
+            row_layout.addWidget(impute_checkbox)
+            self.main_interface.impute_checkboxes.append((f"impute-{col}", impute_checkbox))
 
-            checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
-             
+            checkbox_map[("impute", col)] = impute_checkbox  # Store in shared checkbox map
+            
             layout.addLayout(row_layout)
 
+        button_layout = QHBoxLayout()
+
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(lambda: self.impute_missing(state=True, cols=self.columns_to_impute))
+
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.clicked.connect(self.clear_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+
+        layout.addLayout(button_layout)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
-
-    def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
-        df = set_df(df, self.main_interface)
-        
-
-        if state == 2 or state == True:
-            print("Imputing missing values")
-        
-            if checkbox:
-                checkbox.blockSignals(True)
-                checkbox.setChecked(True)
-                checkbox.blockSignals(False)
-    
-            imputer = SimpleImputer(strategy=strategy)
-            df[cols] = imputer.fit_transform(df[cols])
-
-            modified_df = df[cols]
-            save_parquet_file(modified_df, f"{name}", self.main_interface, strategy)
-            self.main_interface.update_table()
-            
-            print(modified_df)
-   
+    def add_columns(self, col, state=False, strategy="mean"):
+        if state == 2 or state is True:
+            self.columns_to_impute.append((col, strategy))
+            print(f"Column {col} added for imputation using {strategy}")
         else:
-            on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
+            self.columns_to_impute = [(c, s) for c, s in self.columns_to_impute if c != col]
+            print(f"Column {col} removed from imputation")
+
+    def impute_missing(self, state, df=None, cols=None, name="impute", checkbox=None):
+        df = self.main_interface.main_df
+
+        if state == 2 or state is True:
+            print(f"Imputing missing values in columns: {cols}")
+            
+
+           
+            if cols:
+                modified_df = df.clone()
+                for col , strategy in cols:
+                    if strategy == "mean":
+                        fill_value = df[col].mean()
+                        print(fill_value)
+                    elif strategy == "median":
+                        fill_value = df[col].median()
+                    elif strategy == "mode":
+                        fill_value = df[col].mode()[0]
+                        print(fill_value)
+                    elif strategy == "constant":
+                        fill_value = 0  # You can change this to any constant value
+
+                    modified_df = modified_df.with_columns(pl.col(col).fill_null(fill_value))
+                cols_for_df = [col for col , method in cols]
+                save_parquet_file(modified_df[cols_for_df], f"{name}", cols, self.main_interface, strategy=strategy)
+                self.main_interface.update_table()
+
+                print(f"Imputed missing values in column(s): {cols} using {strategy}")
+      
+            else:
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
+
+    def clear_all(self):
+        for name, checkbox in self.main_interface.impute_checkboxes:
+            checkbox.setChecked(False)
+
+
+
+
+# class imputeMissingWidget(featureWidget):
+#     def __init__(self, main_interface):
+#         super().__init__(main_interface)
+      
+#     def initUI(self):
+#         layout = QVBoxLayout()
+#         print(self.main_interface.current_df)
+        
+       
+#         # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+#         # if os.path.exists(final_df):
+#         #     final_df = df_from_parquet(final_df)
+#         # else:
+#         #     final_df = df_from_parquet(self.main_interface.current_df[0])
+        
+
+#         final_df = self.main_interface.main_df
+#         columns = final_df.select(pl.all().is_null().any()).columns
+#         print(columns)
+
+#         for col in columns:
+#             row_layout = QHBoxLayout()
+            
+#             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+#             row_layout.addWidget(col_label)
+            
+#             strategy_combo = QComboBox()
+#             strategy_combo.addItems(["mean", "median", "most_frequent", "constant"])
+#             strategy_combo.setCurrentIndex(0) 
+        
+#             checkbox = QCheckBox("Impute")
+#             checkbox.stateChanged.connect(lambda state, c=col, s=strategy_combo: self.impute_missing(state=state, cols=[c], strategy=s.currentText()))
+            
+#             row_layout.addWidget(strategy_combo)
+#             row_layout.addWidget(checkbox)
+#             self.main_interface.impute_checkboxes.append((f"impute", checkbox))
+
+#             checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
+             
+#             layout.addLayout(row_layout)
+
+#         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+#         self.setLayout(layout)
+
+
+#     def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
+#         df = set_df(df, self.main_interface)
+        
+
+#         if state == 2 or state == True:
+#             print("Imputing missing values")
+        
+#             if checkbox:
+#                 checkbox.blockSignals(True)
+#                 checkbox.setChecked(True)
+#                 checkbox.blockSignals(False)
+    
+#             imputer = SimpleImputer(strategy=strategy)
+#             df[cols] = imputer.fit_transform(df[cols])
+
+#             modified_df = df[cols]
+#             save_parquet_file(modified_df, f"{name}", self.main_interface, strategy)
+#             self.main_interface.update_table()
+            
+#             print(modified_df)
+   
+#         else:
+#             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
 
 
 class dropColumnWidget(featureWidget):
@@ -450,7 +643,7 @@ class encodingCategoryWidget(featureWidget):
                 elif strategy == "ordinal":
                     oe = OrdinalEncoder()
                     print(cols)
-                    numpy_array = df[cols].to_numpy()
+                    numpy_array = df[cols]
 
                     # Apply OrdinalEncoder and transform the column
                     encoded_array = oe.fit_transform(numpy_array)
@@ -641,3 +834,6 @@ def process_file(main_interface , config=None):
                         checkbox[1].parent().columns_to_encode.append(col)
 
             df = encode.encode_category(state=True, df = df ,cols=cols  , strategy=strategies)
+
+
+

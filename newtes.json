@@ -1,0 +1,26 @@
+{
+    "data_path": "C:/Users/Raj/Downloads/202310-divvy-tripdata.csv",
+    "drop_column": {
+        "col": [
+            "ride_id",
+            "rideable_type",
+            "started_at"
+        ],
+        "file": "F:/pivott/pivott/newtes/save_data/df_drop_column.parquet"
+    },
+    "dropna": {
+        "col": []
+    },
+    "impute": {
+        "col": [],
+        "strategy": []
+    },
+    "remove_outlier": {
+        "col": [],
+        "strategy": []
+    },
+    "encode": {
+        "col": [],
+        "strategy": []
+    }
+}

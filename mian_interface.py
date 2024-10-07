@@ -9,7 +9,7 @@ from PyQt6.QtCore import *
 import polars as pl
 import numpy as np
 
-from custom_widgets import MainButton , Button
+from custom_widgets import MainButton , Button , aiButton
 # from dataframe_table import tableWidget
 from table_widget import OptimizedTableWidget
 from dataframeinfo import dataframeinfo
@@ -17,6 +17,7 @@ from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
     imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
     , encodingCategoryWidget
+from steps_widget import StepsWidget
 
 
 
@@ -28,7 +29,8 @@ class MainInterface(QWidget):
     
     def __init__(self , project_path):
         super().__init__()
-        self.project_path =project_path
+
+        self.project_path = project_path
 
         self.file_path = ""
         self.project_data = ""
@@ -81,6 +83,7 @@ class MainInterface(QWidget):
 
         self.table_layout = QVBoxLayout()
         self.properties_layout = QVBoxLayout()
+        self.steps_layout = QVBoxLayout()
         self.table_bottom_layout = QVBoxLayout()
 
         self.table_widget = OptimizedTableWidget()
@@ -94,6 +97,9 @@ class MainInterface(QWidget):
 
         self.table_layout.addLayout(self.table_bottom_layout)
         
+        steps_widget = StepsWidget(main_interface=self)
+        self.steps_layout.addWidget(steps_widget)
+
         features = [
             # ("Drop Duplicates" , dropDuplicateWidget),
             ("Drop Columns", dropColumnWidget ),
@@ -118,6 +124,8 @@ class MainInterface(QWidget):
             collapsible.setWidgets()
             scroll_layout.addWidget(collapsible)
         
+
+
         scroll_area.setWidget(scroll_widget)
         self.properties_layout.addWidget(scroll_area)
 
@@ -127,6 +135,9 @@ class MainInterface(QWidget):
         scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         main_layout.addLayout(self.table_layout, 70)
         main_layout.addLayout(self.properties_layout, 30)
+        main_layout.addLayout(self.steps_layout, 10)
+
+        self.properties_layout.addWidget(aiButton("Clean With AI ✨"))
 
         self.setLayout(main_layout)
 
