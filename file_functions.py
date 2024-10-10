@@ -206,10 +206,16 @@ def create_final_df(main_interface, main_df):
         elif 'encode' in file_path:
             cols = data['encode']['col']
            
-            file_df = df_from_parquet(file_path )
-            print(cols)
-            main_df[cols] = file_df
-        
+            file_df = df_from_parquet(file_path)
+            cols = [col for col, method in cols]
+            
+            # Ensure we only use columns that exist in both dataframes
+            common_cols = [col for col in cols if col in main_df.columns and col in file_df.columns]
+            
+            # Replace columns in main_df with columns from file_df
+            main_df = main_df.with_columns(
+                file_df.select(common_cols)
+            )
         
             
 

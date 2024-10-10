@@ -5,13 +5,14 @@ from custom_widgets import Button , CollapsibleButton
 
 
 class CollapsableWidget(QWidget):
-    def __init__(self, title):
+    def __init__(self, title , steps_widget):
         super().__init__()
         self.title = title
         self.feature_widgets = None
         self.main_interface = None
         self.initUI()
         self.widgets_set = False
+        self.steps_widget = steps_widget
 
     def initUI(self):
         self.main_layout = QVBoxLayout(self)
@@ -38,7 +39,7 @@ class CollapsableWidget(QWidget):
         if not self.widgets_set:
 
             
-            feature = self.feature_widgets(main_interface=self.main_interface)
+            feature = self.feature_widgets(main_interface=self.main_interface , steps_widget=self.steps_widget)
             feature.initUI()    
 
             self.content_layout.addWidget(feature)

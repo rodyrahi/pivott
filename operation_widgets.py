@@ -12,7 +12,7 @@ import polars as pl
 
 from sklearn.calibration import LabelEncoder
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import *
 
 
 from custom_widgets import smallButton
@@ -55,10 +55,11 @@ checkbox_map = {}
 
 
 class featureWidget(QWidget):
-    def __init__(self, main_interface):
+    def __init__(self, main_interface , steps_widget):
         super().__init__()
         self.main_interface = main_interface
         self.columns = []
+        self.steps_widget = steps_widget
 
 
 
@@ -79,104 +80,25 @@ class featureWidget(QWidget):
             print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
 
+    def add_columns(self, col, state=False, strategy="mean" , columns = None ):
+        print(col)
+        print(columns)
 
-# class imputeMissingWidget(featureWidget):
-#     def __init__(self, main_interface):
-#         super().__init__(main_interface)
-#         self.columns_to_impute = []
-      
-#     def initUI(self):
-#         layout = QVBoxLayout()
-#         final_df = self.main_interface.main_df
-#         columns = final_df.schema
-#         columns = [col for col in columns if final_df[col].is_null().any()]
-#         for col in columns:
-#             row_layout = QHBoxLayout()
-            
-#             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
-#             row_layout.addWidget(col_label)
-            
-#             strategy_combo = QComboBox()
-#             strategy_combo.addItems(["mean", "median", "mode", "constant"])
-#             strategy_combo.setCurrentIndex(0) 
-        
-#             checkbox = QCheckBox("Impute")
-#             checkbox.stateChanged.connect(lambda state, col=col, s=strategy_combo: self.add_columns(state=state, col=col, method=s.currentText().lower()))
-            
-#             row_layout.addWidget(strategy_combo)
-#             row_layout.addWidget(checkbox)
-#             self.main_interface.impute_checkboxes.append((f"impute-{col}", checkbox))
 
-#             checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
-             
-#             layout.addLayout(row_layout)
+        if state == 2 or state is True:
+            columns.append((col, strategy))
+            print(f"Column {col} added for imputation using {strategy}")
+        else:
+            columns.remove((col, strategy))
+            print(f"Column {col} removed from imputation")
 
-#         button_layout = QHBoxLayout()
-        
-#         apply_button = smallButton("Apply")
-#         apply_button.clicked.connect(lambda: self.impute_missing_values(state=True, cols=self.columns_to_impute, strategy=strategy_combo.currentText().lower()))
-      
-#         clear_all_button = smallButton("Clear All")
-#         clear_all_button.clicked.connect(self.clear_all)
-#         button_layout.addWidget(clear_all_button)
-#         button_layout.addWidget(apply_button)
 
-#         layout.addLayout(button_layout)
-        
-#         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-#         self.setLayout(layout)
 
-#     def impute_missing_values(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
-#         df = set_df(df, self.main_interface)
-        
-#         if state == 2 or state == True:
-#             if checkbox:
-#                 checkbox.blockSignals(True)
-#                 checkbox.setChecked(True)
-#                 checkbox.blockSignals(False)
-
-           
-#             print(cols)
-#             if cols:
-#                 modified_df = df.clone()
-#                 for col , strategy in cols:
-#                     if strategy == "mean":
-#                         fill_value = df[col].mean()
-#                         print(fill_value)
-#                     elif strategy == "median":
-#                         fill_value = df[col].median()
-#                     elif strategy == "mode":
-#                         fill_value = df[col].mode()[0]
-#                         print(fill_value)
-#                     elif strategy == "constant":
-#                         fill_value = 0  # You can change this to any constant value
-
-#                     modified_df = modified_df.with_columns(pl.col(col).fill_null(fill_value))
-
-#                 cols_for_df = [col for col , method in cols]
-#                 print(f"Imputing missing values for {cols}")
-#                 save_parquet_file(modified_df[cols_for_df], f"{name}", cols, self.main_interface, strategy)
-#                 self.main_interface.update_table()
-#             else:
-#                 print("unchecked")
-#                 on_uncheck_checkbox(self.main_interface, name=f"{name}")
-
-#     def add_columns(self, col, state=False, method=None):
-#         if state == 2 or state is True:
-#             self.columns_to_impute.append((col, method))
-#             print(f"Column {col} added for imputation using {method}")
-#         else:
-#             self.columns_to_impute = [(c, m) for c, m in self.columns_to_impute if c != col]
-#             print(f"Column {col} removed from imputation")
-
-#     def clear_all(self):
-#         for name, checkbox in self.main_interface.impute_checkboxes:
-#             checkbox.setChecked(False)
 
 
 class imputeMissingWidget(featureWidget):
-    def __init__(self, main_interface):
-        super().__init__(main_interface)
+    def __init__(self, main_interface , steps_widget):
+        super().__init__(main_interface , steps_widget)
         self.columns_to_impute = []
 
     def initUI(self):
@@ -199,8 +121,8 @@ class imputeMissingWidget(featureWidget):
             
             impute_checkbox = QCheckBox("Impute")
             impute_checkbox.stateChanged.connect(
-                lambda state, c=col, strategy_combo=strategy_combo: self.add_columns(
-                    col=c, state=state, strategy=strategy_combo.currentText()
+                lambda state, c=col, strategy_combo=strategy_combo , columns=self.columns_to_impute: self.add_columns(
+                    col=c, state=state, strategy=strategy_combo.currentText() ,  columns=columns
                 )
             )
             row_layout.addWidget(strategy_combo)
@@ -225,13 +147,7 @@ class imputeMissingWidget(featureWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
-    def add_columns(self, col, state=False, strategy="mean"):
-        if state == 2 or state is True:
-            self.columns_to_impute.append((col, strategy))
-            print(f"Column {col} added for imputation using {strategy}")
-        else:
-            self.columns_to_impute = [(c, s) for c, s in self.columns_to_impute if c != col]
-            print(f"Column {col} removed from imputation")
+
 
     def impute_missing(self, state, df=None, cols=None, name="impute", checkbox=None):
         df = self.main_interface.main_df
@@ -265,86 +181,109 @@ class imputeMissingWidget(featureWidget):
             else:
                 on_uncheck_checkbox(self.main_interface, name=f"{name}")
 
+            
+            self.steps_widget.update_steps()
+
     def clear_all(self):
         for name, checkbox in self.main_interface.impute_checkboxes:
             checkbox.setChecked(False)
 
 
 
+class encodingCategoryWidget(featureWidget):
+    def __init__(self, main_interface , steps_widget):
+        super().__init__(main_interface , steps_widget)
+        self.columns_to_encode = []
 
-# class imputeMissingWidget(featureWidget):
-#     def __init__(self, main_interface):
-#         super().__init__(main_interface)
+    def initUI(self):
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
+
+        final_df = self.main_interface.main_df
+        columns = final_df.schema
+        columns = [col for col in columns if final_df[col].dtype == pl.Categorical or final_df[col].dtype == pl.Utf8]
+
+        print("getting columns for encoding categorical values")
+        for col in columns:
+            row_layout = QHBoxLayout()
+
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            row_layout.addWidget(col_label)
+
+            strategy_combo = QComboBox()
+            strategy_combo.addItems(["ordinal","label"])
+            
+            encode_checkbox = QCheckBox("Encode")
+            encode_checkbox.stateChanged.connect(
+                lambda state, c=col, strategy_combo=strategy_combo , columns =self.columns_to_encode: self.add_columns(
+                    col=c, state=state, strategy=strategy_combo.currentText() , columns=columns
+                )
+            )
+            row_layout.addWidget(strategy_combo)
+            row_layout.addWidget(encode_checkbox)
+            self.main_interface.encode_checkboxes.append((f"encode-{col}", encode_checkbox))
+
+            checkbox_map[("encode", col)] = encode_checkbox  # Store in shared checkbox map
+            
+            layout.addLayout(row_layout)
+
+        button_layout = QHBoxLayout()
+
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(lambda: self.encode_category(state=True, cols=self.columns_to_encode))
+
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.clicked.connect(self.clear_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+
+        layout.addLayout(button_layout)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(layout)
+
+
+    def encode_category(self, state, df=None, cols=None, name="encode", checkbox=None , strategy=None):
+        df = self.main_interface.main_df
+
+        if state == 2 or state is True:
+            print(f"Encoding categorical values in columns: {cols}")
+            
+            if cols:
+                modified_df = df.clone()
+                for col, strategy in cols:
+
+                      if strategy == "one-hot":
+                          encoded = pd.get_dummies(modified_df[col], prefix=col)
+                          modified_df = pl.concat([modified_df, pl.DataFrame(encoded)], axis=1)
+                          modified_df = modified_df.drop(col)
+                      elif strategy == "label":
+                          encoded = pd.factorize(modified_df[col])[0]
+                          modified_df = modified_df.with_columns(pl.Series(name=f"{col}_encoded", values=encoded))
+                      elif strategy == "ordinal":
+                          categories = modified_df[col].unique().sort().to_list()
+                          encoded = pd.Categorical(modified_df[col], categories=categories).codes
+                          modified_df = modified_df.with_columns(pl.Series(name=col, values=encoded))
+                          print(modified_df)
+                cols_for_df = [col for col, method in cols]
+                save_parquet_file(modified_df[cols_for_df], f"{name}", cols, self.main_interface, strategy=strategy)
+                self.main_interface.update_table()
+
+                print(f"Encoded categorical values in column(s): {cols} using {strategy}")
       
-#     def initUI(self):
-#         layout = QVBoxLayout()
-#         print(self.main_interface.current_df)
-        
-       
-#         # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-#         # if os.path.exists(final_df):
-#         #     final_df = df_from_parquet(final_df)
-#         # else:
-#         #     final_df = df_from_parquet(self.main_interface.current_df[0])
-        
-
-#         final_df = self.main_interface.main_df
-#         columns = final_df.select(pl.all().is_null().any()).columns
-#         print(columns)
-
-#         for col in columns:
-#             row_layout = QHBoxLayout()
+            else:
+                
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
             
-#             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
-#             row_layout.addWidget(col_label)
-            
-#             strategy_combo = QComboBox()
-#             strategy_combo.addItems(["mean", "median", "most_frequent", "constant"])
-#             strategy_combo.setCurrentIndex(0) 
-        
-#             checkbox = QCheckBox("Impute")
-#             checkbox.stateChanged.connect(lambda state, c=col, s=strategy_combo: self.impute_missing(state=state, cols=[c], strategy=s.currentText()))
-            
-#             row_layout.addWidget(strategy_combo)
-#             row_layout.addWidget(checkbox)
-#             self.main_interface.impute_checkboxes.append((f"impute", checkbox))
+            self.steps_widget.update_steps()
 
-#             checkbox_map[("impute", col)] = checkbox  # Store the checkbox in the shared map
-             
-#             layout.addLayout(row_layout)
-
-#         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-#         self.setLayout(layout)
-
-
-#     def impute_missing(self, state, df=None, cols=None, strategy=None, name="impute", checkbox=None):
-#         df = set_df(df, self.main_interface)
-        
-
-#         if state == 2 or state == True:
-#             print("Imputing missing values")
-        
-#             if checkbox:
-#                 checkbox.blockSignals(True)
-#                 checkbox.setChecked(True)
-#                 checkbox.blockSignals(False)
-    
-#             imputer = SimpleImputer(strategy=strategy)
-#             df[cols] = imputer.fit_transform(df[cols])
-
-#             modified_df = df[cols]
-#             save_parquet_file(modified_df, f"{name}", self.main_interface, strategy)
-#             self.main_interface.update_table()
-            
-#             print(modified_df)
-   
-#         else:
-#             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
+    def clear_all(self):
+        for name, checkbox in self.main_interface.encode_checkboxes:
+            checkbox.setChecked(False)
 
 
 class dropColumnWidget(featureWidget):
-    def __init__(self, main_interface):
-        super().__init__(main_interface)
+    def __init__(self, main_interface , steps_widget):
+        super().__init__(main_interface , steps_widget)
         self.columns_to_drop = []
 
     def initUI(self):
@@ -363,7 +302,7 @@ class dropColumnWidget(featureWidget):
             
         
             checkbox = QCheckBox("Drop Column")
-            checkbox.stateChanged.connect(lambda state , col=col : self.add_columns(col=col , state=state  ))
+            checkbox.stateChanged.connect(lambda state , col=col  : self.add_columns(col=col , state=state  ))
 
             row_layout.addWidget(checkbox)
             self.main_interface.drop_column_checkboxes.append((f"drop_column-{col}", checkbox))
@@ -412,6 +351,8 @@ class dropColumnWidget(featureWidget):
             self.enable_checkbox(col , 'impute')
             self.enable_checkbox(col , 'iqr')    
 
+    
+    
     def drop_column(self, state, df=None, cols=None, strategy=None, name="drop_column", checkbox=None):
         
         df = self.main_interface.main_df
@@ -443,7 +384,8 @@ class dropColumnWidget(featureWidget):
             else:
                 print("uncecked")
                 on_uncheck_checkbox(self.main_interface, name=f"{name}", strategy=strategy)
-           
+            
+            self.steps_widget.update_steps()           
             
     def clear_all(self):
         for name, checkbox in self.main_interface.drop_column_checkboxes:
@@ -451,8 +393,8 @@ class dropColumnWidget(featureWidget):
 
 
 class removeOutlierWidget(featureWidget):
-    def __init__(self, main_interface):
-        super().__init__(main_interface)
+    def __init__(self, main_interface , steps_widget):
+        super().__init__(main_interface , steps_widget)
         self.columns_to_remove_outliers = []
 
     def initUI(self):
@@ -548,138 +490,15 @@ class removeOutlierWidget(featureWidget):
             else:
             
                 on_uncheck_checkbox(self.main_interface, name=f"{name}")
-
+            self.steps_widget.update_steps()
     def clear_all(self):
         for name, checkbox in self.main_interface.remove_outlier_checkboxes:
             checkbox.setChecked(False)
 
 
-class encodingCategoryWidget(featureWidget):
-    def __init__(self, main_interface):
-        super().__init__(main_interface)
-        self.columns_to_encode = []
-      
-    def initUI(self):
-        layout = QVBoxLayout()
-        print(self.main_interface.current_df)
-    
-        # final_df = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
-        # if os.path.exists(final_df):
-        #     final_df = df_from_parquet(final_df)
-        # else:
-        #     final_df = df_from_parquet(self.main_interface.current_df[0])
-        
-        final_df = self.main_interface.main_df
-        columns = final_df.schema
-        columns = [col for col, dtype in columns.items() if dtype in [pl.Utf8, pl.Categorical]]
-
-        for col in columns:
-            row_layout = QHBoxLayout()
-            
-            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
-            row_layout.addWidget(col_label)
-            
-            strategy_combo = QComboBox()
-            strategy_combo.addItems(["ordinal", "label" ])
-            strategy_combo.setCurrentIndex(0) 
-        
-            checkbox = QCheckBox("Encode")
-            checkbox.stateChanged.connect(lambda state, col=col, s=strategy_combo: self.add_columns(state=state, col=col , method=s.currentText().lower()))
-            
-            row_layout.addWidget(strategy_combo)
-            row_layout.addWidget(checkbox)
-            self.main_interface.encode_checkboxes.append((f"encode-{col}", checkbox))
-
-            checkbox_map[("encode", col)] = checkbox  # Store the checkbox in the shared map
-             
-            layout.addLayout(row_layout)
-
-        button_layout = QHBoxLayout()
-        
-        apply_button = smallButton("Apply")
-        apply_button.clicked.connect(lambda: self.encode_category(state=True , cols=self.columns_to_encode , strategy=strategy_combo.currentText().lower()))
-      
-        
-        clear_all_button = smallButton("Clear All")
-
-        clear_all_button.clicked.connect(self.clear_all)
-        button_layout.addWidget(clear_all_button)
-        button_layout.addWidget(apply_button)
-
-
-        layout.addLayout(button_layout)
-        
-
-        
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(layout)
-
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(layout)
-
-
-    def encode_category(self, state, df=None, cols=None, strategy=None, name="encode", checkbox=None):
-        df = set_df(df, self.main_interface)
-        
-
-        if state == 2 or state == True:
-            
-        
-            if checkbox:
-                checkbox.blockSignals(True)
-                checkbox.setChecked(True)
-                checkbox.blockSignals(False)
-
-
-            cols = [col for col, method in cols]
-            if  cols:
-
-                if strategy == "label":
-                    le = LabelEncoder()
-                    modified_df = pd.DataFrame(le.fit_transform(df[cols[0]]), columns=[cols[0]])
-                    save_parquet_file(modified_df, f"{name}-{cols[0]}", self.main_interface, strategy)
-                    self.main_interface.update_table()
-                    
-                elif strategy == "ordinal":
-                    oe = OrdinalEncoder()
-                    print(cols)
-                    numpy_array = df[cols]
-
-                    # Apply OrdinalEncoder and transform the column
-                    encoded_array = oe.fit_transform(numpy_array)
-
-                    # Convert the encoded result back to a Polars DataFrame
-                    modified_df = pl.DataFrame({cols[0]: encoded_array.flatten()})
-
-                    print("Encoding categorical values")
-                    save_parquet_file(modified_df, f"{name}" , cols, self.main_interface, strategy)
-                    self.main_interface.update_table()
-
-            else:
-                print("uncecked")
-                on_uncheck_checkbox(self.main_interface, name=f"{name}")
-       
-
-    def add_columns(self, col, state=False, method=None):
-        if state == 2 or state is True:
-            self.columns_to_encode.append((col, method))
-            print(f"Column {col} added for outlier removal using {method}")
-            self.disable_checkbox(col, 'drop_column')  # Disable conflicting operations
-        else:
-            self.columns_to_encode = [(c, m) for c, m in self.columns_to_encode if c != col]
-            print(f"Column {col} removed from outlier removal")
-            self.enable_checkbox(col, 'drop_column')
-
-    def clear_all(self):
-        for name, checkbox in self.main_interface.encode_checkboxes:
-            checkbox.setChecked(False)
-
-
-
-
 class dropDuplicateWidget(featureWidget):
-    def __init__(self , main_interface):
-        super().__init__(main_interface)
+    def __init__(self , main_interface , steps_widget):
+        super().__init__(main_interface , steps_widget)
         self.main_interface = main_interface
         # self.initUI()
 
@@ -742,23 +561,24 @@ class dropDuplicateWidget(featureWidget):
    
         else:
             on_uncheck_checkbox(self.main_interface, name=f"{name}-{cols[0]}", strategy=strategy)
+        
+        self.steps_widget.update_steps()
 
 
 
 
 
-
-def process_file(main_interface , config=None):
+def process_file(main_interface , config=None , steps_widget = None):
     
     
     if config is None:
         config = {}
 
 
-    impute = imputeMissingWidget(main_interface)
-    drop_column = dropColumnWidget(main_interface)
-    remove_outlier = removeOutlierWidget(main_interface)
-    encode = encodingCategoryWidget(main_interface)
+    impute = imputeMissingWidget(main_interface , steps_widget )
+    drop_column = dropColumnWidget(main_interface, steps_widget)
+    remove_outlier = removeOutlierWidget(main_interface, steps_widget)
+    encode = encodingCategoryWidget(main_interface, steps_widget)
 
 
     for operation, details in config.items():
@@ -807,33 +627,24 @@ def process_file(main_interface , config=None):
                         df = remove_outlier.remove_outlier(state=True, df = df ,cols=[col] ,  checkbox=checkbox[1] , method=strategy)
 
         
-        # if operation == "drop_column":
-        #     cols = details.get("col", [])
-                     
-        #     for col in cols:
-        #         for checkbox in main_interface.drop_column_checkboxes:
-        #             if checkbox[0] == f"drop_column-{col}":
 
-        #                 checkbox[1].blockSignals(True)
-        #                 checkbox[1].setChecked(True)
-        #                 checkbox[1].blockSignals(False)
-        #                 checkbox[1].parent().columns_to_drop.append(col)
-
-            
-        #     df = drop_column.drop_column(state=True, df = df ,cols= cols)
         if operation == "encode":
+           
             cols = details.get("col", [])
-            strategies = details.get("strategy", [])
-            for col, strategy in zip(cols, strategies):
+
+            for col in cols:
                 for checkbox in main_interface.encode_checkboxes:
                    
-                    if checkbox[0] == f"encode-{col}":
+                    print(col)
+                    if checkbox[0] == f"encode-{col[0]}":
+                        print("Encoding")
                         checkbox[1].blockSignals(True)
                         checkbox[1].setChecked(True)
                         checkbox[1].blockSignals(False)
-                        checkbox[1].parent().columns_to_encode.append(col)
+                        checkbox[1].parent().columns_to_encode.append((col[0] , col[-1]))
 
-            df = encode.encode_category(state=True, df = df ,cols=cols  , strategy=strategies)
+                        df = encode.encode_category(state=True, df=df, cols=[(col[0] , col[-1])], strategy=col[-1], checkbox=checkbox[1])
+            # df = encode.encode_category(state=True, df = df ,cols=cols  , strategy=strategies)
 
 
 

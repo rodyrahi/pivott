@@ -117,10 +117,11 @@ class MainInterface(QWidget):
 
         for feature_name, feature_widget in features:
             
-            collapsible = CollapsableWidget(feature_name)
+            collapsible = CollapsableWidget(feature_name , steps_widget)
             # collapsible.setWidgets(feature_widget , self)
             collapsible.feature_widgets = feature_widget
             collapsible.main_interface =  self
+            
             collapsible.setWidgets()
             scroll_layout.addWidget(collapsible)
         
@@ -143,7 +144,7 @@ class MainInterface(QWidget):
 
        
 
-        process_file(self , read_json_file(self.project_path) )
+        process_file(self , read_json_file(self.project_path) , steps_widget )
  
        
 

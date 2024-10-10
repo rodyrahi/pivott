@@ -13,31 +13,22 @@
     "impute": {
         "col": [
             [
+                "Age",
+                "mean"
+            ],
+            [
                 "Cabin",
                 "constant"
             ]
         ],
         "strategy": [
-            "constant",
-            "constant",
-            "mean",
-            "constant",
-            "constant",
-            "constant",
             "constant"
         ],
         "file": "F:/pivott/pivott/test2/save_data/df_impute.parquet"
     },
     "remove_outlier": {
-        "col": [
-            [
-                "Age",
-                "iqr"
-            ]
-        ],
-        "strategy": [
-            "iqr"
-        ],
+        "col": [],
+        "strategy": [],
         "file": "F:/pivott/pivott/test2/save_data/df_remove_outlier.parquet"
     },
     "encode": {
