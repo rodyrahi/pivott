@@ -96,6 +96,7 @@ class featureWidget(QWidget):
             if strategy:
                 
                 columns.remove((col, strategy))
+                
                 print(f"Column {col} removed from imputation using {strategy}")
             else:
                 columns.remove(col)
