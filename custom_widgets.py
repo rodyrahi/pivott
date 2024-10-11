@@ -44,7 +44,7 @@ class aiButton(QPushButton):
 class stepButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
-        self.setStyleSheet("padding: 10px; border-radius: 0px; border: 2px solid White;")
+        self.setStyleSheet("padding: 10px; border-radius: 0px; border: 2px solid gray;")
         self.setFixedWidth(150)
 
 class smallButton(QPushButton):

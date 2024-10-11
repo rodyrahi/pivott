@@ -24,14 +24,14 @@ def update_add_json_file(main_interface , suffix , strategy , parquet_file , col
     if cols not in data[feature]['col']:
         data[feature]['col'] = cols
 
-    if strategy and not len(data[feature]['strategy']) == len(data[feature]['col']):
-        data[feature]['strategy'].append(strategy)
+    # if strategy and not len(data[feature]['strategy']) == len(data[feature]['col']):
+    #     data[feature]['strategy'].append(strategy)
 
     with open(main_interface.project_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
     print(f"Updated {feature} in JSON: {data[feature]}")
 
-def update_remove_json_file(main_interface , suffix ,strategy):
+def update_remove_json_file(main_interface , suffix ,strategy=None):
 
     col = suffix.split('-')[-1]
     feature = suffix.split('-')[0]
@@ -41,12 +41,12 @@ def update_remove_json_file(main_interface , suffix ,strategy):
     if data[feature]['col']:
         data[feature]['col'] = []
 
-    if strategy and strategy in data[feature]['strategy']:
-        data[feature]['strategy'].remove(strategy)
+    # if strategy and strategy in data[feature]['strategy']:
+    #     data[feature]['strategy'].remove(strategy)
 
     with open(main_interface.project_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
-    print(f"Updated {feature} in JSON: {data[feature]}")
+    # print(f"Updated {feature} in JSON: {data[feature]}")
 
 
 
@@ -219,8 +219,24 @@ def create_final_df(main_interface, main_df):
             # Perform an anti-join based on the temporary index
             main_df = main_df.join(file_df, on="temp_index", how="anti").drop("temp_index")
             print(main_df)
-            
 
+        elif 'scale_minmax' in file_path:
+            
+            cols = data['scale_minmax']['col']
+           
+            file_df = df_from_parquet(file_path)
+            # cols = [col for col in cols]
+            
+            # Get all common columns from file_df and main_df
+            common_cols = [col for col in file_df.columns if col in main_df.columns]
+            
+            # Replace main_df columns with file_df columns
+            main_df = main_df.with_columns(
+                file_df.select(common_cols)
+            )
+            print(main_df) 
+
+    
     if os.path.exists(final_path):
         os.remove(final_path)
     

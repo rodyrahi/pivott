@@ -13,6 +13,9 @@ from updates.auto_updater import AutoUpdater
 from custom_widgets import MainButton , Button
 # from sklearn.impute import SimpleImputer
 
+
+
+
 class DownloadThread(QThread):
     # Custom signal to emit when download is complete
     download_complete = pyqtSignal(str)
@@ -34,7 +37,7 @@ class MainWindow(QMainWindow):
 
         self.project_path = ""
 
-        self.updater = AutoUpdater(current_version="0.2", version_url="https://pivott.click/software_version.json")
+        self.updater = AutoUpdater(current_version="0.3", version_url="https://pivott.click/software_version.json")
         
         self.setWindowTitle('Two Column Main Window')
         self.setWindowIcon(QIcon('icon.png'))
@@ -106,7 +109,18 @@ class MainWindow(QMainWindow):
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, False)
         self.setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
         self.drag_position = None
-        self.main_layout.removeItem(self.header_layout)
+        
+        # Remove all widgets from main_layout
+        while self.main_layout.count():
+            item = self.main_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            elif isinstance(item, QLayout):
+                self.clearLayout(item)
+        
+        
+        
         
         self.showNormal() 
 
@@ -155,6 +169,18 @@ class MainWindow(QMainWindow):
         if installer_path:
             QMessageBox.information(self, "Update Downloaded", "Update downloaded. Installing now...")
             self.updater.apply_update(installer_path)
+
+    def clearLayout(self, layout):
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+                elif isinstance(item, QLayout):
+                    self.clearLayout(item)
+
+
+
 
 
 if __name__ == "__main__":

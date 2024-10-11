@@ -16,7 +16,7 @@ from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
     imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
-    , encodingCategoryWidget , dropNaWidget
+    , encodingCategoryWidget , dropNaWidget , scaleMinmaxWidget
 from steps_widget import StepsWidget
 
 
@@ -45,7 +45,7 @@ class MainInterface(QWidget):
         self.remove_outlier_checkboxes = []
         self.encode_checkboxes =[]
         self.drop_na_checkboxes = []
-
+        self.scale_minmax_checkboxes = []
 
         self.prepare_project()
         self.initUI()
@@ -108,6 +108,8 @@ class MainInterface(QWidget):
             ("Impute Missing", imputeMissingWidget ),
             ("Remove Outliers", removeOutlierWidget),
             ("Encode Categorical", encodingCategoryWidget ),
+            ("Scale MinMax", scaleMinmaxWidget)
+
         ]
 
         scroll_area = QScrollArea()
@@ -146,7 +148,7 @@ class MainInterface(QWidget):
 
        
 
-        process_file(self , read_json_file(self.project_path) , steps_widget )
+        process_file(self  , steps_widget=steps_widget )
  
        
 

@@ -1,7 +1,13 @@
 import json
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
-from custom_widgets import stepButton
+
+from custom_widgets import stepButton , Button
+from operation_widgets import process_file
+from file_functions import update_remove_json_file
+
+
+
 class StepsWidget(QWidget):
     def __init__(self , main_interface):
         super().__init__()
@@ -11,14 +17,14 @@ class StepsWidget(QWidget):
     def initUI(self):
         self.main_layout = QVBoxLayout()
         
-        step_label = QLabel("Steps:")
+       
         print(self.main_interface.current_df)
         # step1_button = stepButton("Step 1")
         # step2_button = stepButton("Step 2")
         # step3_button = stepButton("Step 3")
         self.update_steps()
         
-        self.main_layout.addWidget(step_label)
+
         # self.main_layout.addWidget(step1_button)
         # self.main_layout.addWidget(step2_button)
         # self.main_layout.addWidget(step3_button)
@@ -27,24 +33,66 @@ class StepsWidget(QWidget):
         self.setLayout(self.main_layout)
     
     def update_steps(self):
+         
         
-
         # Remove all widgets from main_layout
         while self.main_layout.count():
             item = self.main_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
+            if item.widget():
+                item.widget().deleteLater()
+            elif item.layout():
+                self.deleteItemsOfLayout(item.layout())
+        
+
 
         with open(self.main_interface.project_path, 'r') as file:
             data = json.load(file)
         
 
-        
+        step_label = QLabel("Operations")
+        self.main_layout.addWidget(step_label)
+        step_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         operations = [(op , data[op]['col']) for op in data.keys() if isinstance(data[op], dict) and 'col' in data[op] and len(data[op]['col']) > 0]
         
-        for op , col in operations:
-            step_button = stepButton(op)
-            self.main_layout.addWidget(step_button)
+        for op, col in operations:
+            
+            button_layout = QHBoxLayout()
+            button_layout.addWidget(QLabel(f"{op}") , alignment=Qt.AlignmentFlag.AlignHCenter)
+            close_button = QPushButton("×")
+            close_button.setObjectName("closeButton")
+            close_button.setFixedSize(30, 30)
+            close_button.setStyleSheet("""
+                QPushButton#closeButton {
+                    background-color: transparent;
+                    border: none;
+                    color: #808080;
+                    font-size: 20px;
+                    font-weight: bold;
+                }
+                QPushButton#closeButton:hover {
+                    color: white;
+                }
+            """)
+            close_button.clicked.connect(lambda _, op=op: self.remove_step(op))
+            button_layout.addWidget(close_button)
+            self.main_layout.addLayout(button_layout)
 
+    def remove_step(self , op):
+        pass        
+        # update_remove_json_file(self.main_interface , f"{op}-remove")
+        # process_file(self.main_interface , self)
+
+
+
+
+    def deleteItemsOfLayout(self, layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    self.deleteItemsOfLayout(item.layout())
+            layout.deleteLater()

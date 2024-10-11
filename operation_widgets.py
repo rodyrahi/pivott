@@ -94,6 +94,7 @@ class featureWidget(QWidget):
                 print(f"Column {col} added for imputation")
         else:
             if strategy:
+                
                 columns.remove((col, strategy))
                 print(f"Column {col} removed from imputation using {strategy}")
             else:
@@ -197,7 +198,6 @@ class imputeMissingWidget(featureWidget):
         for name, checkbox in self.main_interface.impute_checkboxes:
             checkbox.setChecked(False)
 
-
 class dropNaWidget(featureWidget):
     def __init__(self, main_interface, steps_widget):
         super().__init__(main_interface, steps_widget)
@@ -286,9 +286,6 @@ class dropNaWidget(featureWidget):
     def clear_all(self):
         for name, checkbox in self.main_interface.drop_na_checkboxes:
             checkbox.setChecked(False)
-
-
-
 
 class encodingCategoryWidget(featureWidget):
     def __init__(self, main_interface , steps_widget):
@@ -655,15 +652,138 @@ class dropDuplicateWidget(featureWidget):
         
         self.steps_widget.update_steps()
 
+class scaleMinmaxWidget(featureWidget):
+    def __init__(self, main_interface, steps_widget):
+        super().__init__(main_interface, steps_widget)
+        self.columns_to_scale = []
 
+    def initUI(self):
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
 
+        final_df = self.main_interface.main_df
+        columns = final_df.columns
+        dtypes = final_df.dtypes
 
+        # Use Polars data types to filter for numeric columns
+        columns = [
+            col for col, dtype in zip(columns, dtypes)
+            if pl.Int64 == dtype or pl.Float64 == dtype
+        ]
 
-def process_file(main_interface , config=None , steps_widget = None):
+        print("getting columns for MinMax scaling")
+        for col in columns:
+            row_layout = QHBoxLayout()
+
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            row_layout.addWidget(col_label)
+
+            scale_checkbox = QCheckBox("Scale")
+
+            row_layout.addWidget(scale_checkbox)
+
+            # Create QLineEdit for min and max with numerical input validation
+            min_input = QLineEdit()
+            min_input.setPlaceholderText("Min")
+            min_input.setValidator(QDoubleValidator())  # Allow floating-point values only
+            row_layout.addWidget(min_input)
+
+            max_input = QLineEdit()
+            max_input.setPlaceholderText("Max")
+            max_input.setValidator(QDoubleValidator())  # Allow floating-point values only
+            row_layout.addWidget(max_input)
+
+        
+            
+            scale_checkbox.stateChanged.connect(
+                lambda state, c=col, columns=self.columns_to_scale , strategy=(min_input, max_input): self.add_columns(
+                    col=c, state=state, strategy=(strategy[0].text() , strategy[-1].text()) , columns=columns
+                )
+            )
+
+            self.main_interface.scale_minmax_checkboxes.append((f"scale_minmax-{col}", scale_checkbox, min_input, max_input))
+
+            checkbox_map[("scale_minmax", col)] = (scale_checkbox, min_input, max_input)  # Store in shared checkbox map
+
+            layout.addLayout(row_layout)
+
+        button_layout = QHBoxLayout()
+
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(self.apply_scale_minmax)
+
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.clicked.connect(self.clear_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+
+        layout.addLayout(button_layout)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(layout)
+        
+    def apply_scale_minmax(self):
+        cols_to_scale = []
+        min_max_values = {}
+        for name, checkbox, min_input, max_input in self.main_interface.scale_minmax_checkboxes:
+            if checkbox.isChecked():
+                col = name.split('-')[1]
+                cols_to_scale.append(col)
+                try:
+                    min_val = float(min_input.text())
+                    max_val = float(max_input.text())
+                    min_max_values[col] = (min_val, max_val)
+                except ValueError:
+                    print(f"Invalid min/max values for column {col}. Using default min/max.")
+        
+        self.scale_minmax(state=True, cols=self.columns_to_scale, min_max_values=min_max_values)
+
+    def scale_minmax(self, state, df=None, cols=None, min_max_values=None, name="scale_minmax", checkbox=None):
+        from sklearn.preprocessing import MinMaxScaler
+        import numpy as np
+        
+        df = df if df is not None else self.main_interface.main_df
+
+        if state == 2 or state is True:
+            if cols:
+                print(f"Applying MinMax scaling to columns: {cols}")
+                
+                scaler = MinMaxScaler()
+                
+                scaled_df = df.clone()
+                for col , strategy in cols:
+                    print(strategy)
+                    if min_max_values and col in min_max_values:
+                        feature_range = min_max_values[col]
+                        scaler = MinMaxScaler(feature_range=feature_range)
+                    else:
+                        scaler = MinMaxScaler()
+                    
+                    scaled_values = scaler.fit_transform(np.array(df[col]).reshape(-1, 1)).flatten()
+                    scaled_df = scaled_df.with_columns(pl.Series(name=col, values=scaled_values))
+                
+                cols_to_save= [col for col , strategy in cols]
+                save_parquet_file(scaled_df[cols_to_save], name, cols, self.main_interface , )
+                
+                self.main_interface.update_table()
+
+                print(f"Applied MinMax scaling to column(s): {cols}")
+            
+            else:
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
+            
+            self.steps_widget.update_steps()
+
+    def clear_all(self):
+        for name, checkbox, min_input, max_input in self.main_interface.scale_minmax_checkboxes:
+            checkbox.setChecked(False)
+            min_input.clear()
+            max_input.clear()
+
+def process_file(main_interface , steps_widget = None):
     
     
-    if config is None:
-        config = {}
+    # if config is None:
+    config = read_json_file(main_interface.project_path)
 
 
     impute = imputeMissingWidget(main_interface , steps_widget )
@@ -671,6 +791,7 @@ def process_file(main_interface , config=None , steps_widget = None):
     remove_outlier = removeOutlierWidget(main_interface, steps_widget)
     encode = encodingCategoryWidget(main_interface, steps_widget)
     drop_na = dropNaWidget(main_interface, steps_widget)
+    scale_minmax = scaleMinmaxWidget(main_interface, steps_widget)
 
 
     for operation, details in config.items():
@@ -680,13 +801,24 @@ def process_file(main_interface , config=None , steps_widget = None):
  
         
         if operation == "impute":
+
             cols = details.get("col", [])
-            strategies = details.get("strategy", [])
-            
-            for col, strategy in zip(cols, strategies):
+
+            for col in cols:
                 for checkbox in main_interface.impute_checkboxes:
-                    if checkbox[0] == f"impute-{col}":
-                        df = impute.impute_missing(state=True, df = df ,cols=[col], strategy=strategy , checkbox=checkbox[1])
+                   
+                    print(col)
+                    if checkbox[0] == f"impute-{col[0]}":
+                        print("Encoding")
+                        checkbox[1].blockSignals(True)
+                        checkbox[1].setChecked(True)
+                        checkbox[1].blockSignals(False)
+                        checkbox[1].parent().columns_to_impute.append((col[0] , col[-1]))
+
+                        df = impute.impute_missing(state=True, df=df, cols=[(col[0] , col[-1])], checkbox=checkbox[1])
+
+
+
 
         if operation == "drop_column":
             cols = details.get("col", [])
@@ -749,6 +881,27 @@ def process_file(main_interface , config=None , steps_widget = None):
                         checkbox[1].parent().columns_to_encode.append((col[0] , col[-1]))
 
                         df = encode.encode_category(state=True, df=df, cols=[(col[0] , col[-1])], strategy=col[-1], checkbox=checkbox[1])
+
+
+        if operation == "scale_minmax":
+           
+            cols = details.get("col", [])
+
+            for col in cols:
+                for checkbox in main_interface.scale_minmax_checkboxes:
+                   
+                    
+                    print(checkbox)
+                    if checkbox[0] == f"scale_minmax-{col[0]}":
+                        print("Scaling MinMax")
+                        checkbox[1].blockSignals(True)
+                        checkbox[1].setChecked(True)
+                        checkbox[1].blockSignals(False)
+                        checkbox[1].parent().columns_to_scale.append(col)
+                        checkbox[-1].setText( col[-1][-1])
+                        checkbox[-2].setText( col[-1][0])
+                        df = scale_minmax.scale_minmax(state=True, df=df, cols=[(col[0] , col[-1])], checkbox=checkbox[1])
+            
             # df = encode.encode_category(state=True, df = df ,cols=cols  , strategy=strategies)
 
 

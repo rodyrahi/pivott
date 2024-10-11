@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "pivott"
-#define MyAppVersion "0.003"
+#define MyAppVersion "0.03"
 #define MyAppPublisher "pivott"
 #define MyAppURL "https://www.pivott.click/"
 #define MyAppExeName "pivott.exe"
@@ -35,6 +35,7 @@ OutputBaseFilename=pivott
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+PrivilegesRequired=admin
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
