@@ -6,6 +6,11 @@ import polars as pl
 from functools import cache
 
 
+
+
+
+
+
 def update_add_json_file(main_interface , suffix , strategy , parquet_file , cols):
 
     # col = suffix.split('-')[-1]
@@ -83,7 +88,12 @@ def create_json_file(file_path, data=None):
                 "strategy": [
 
                 ]
-            }
+            },
+            "drop_na": {
+                "col": [],
+                "strategy": [],
+                "file": ""
+                }
 
         }
 
@@ -155,11 +165,10 @@ def create_final_df(main_interface, main_df):
 
     for file_path in main_interface.current_df:
 
-        if 'dropna' in file_path:
-            file_df = df_from_parquet(file_path)
-            main_df = main_df[~main_df.index.isin(file_df.index)]
 
-        elif 'drop_column' in file_path:
+
+            
+        if 'drop_column' in file_path:
             
             cols = data['drop_column']['col']
             cols = [col for col in cols if col in main_df.columns]
@@ -169,24 +178,13 @@ def create_final_df(main_interface, main_df):
 
 
         elif 'remove_outlier' in file_path:
-            # cols = data['encode']['col']
-            # cols = [col for col in cols if col in main_df.columns]
+
             file_df = df_from_parquet(file_path )
-            # print(cols)
-            # main_df[cols] = file_df
 
-
-            # file_df = df_from_parquet(file_path)
-            # col = file_path.split('-')[-1].replace(".parquet", "")
-  
-            # Create a new column in both DataFrames that concatenates all columns into a single string
             main_df = main_df.with_columns(pl.concat_str(main_df.columns).alias("concat_all"))
             file_df = file_df.with_columns(pl.concat_str(file_df.columns).alias("concat_all"))
 
-            # Perform an anti-join based on the concatenated column
             main_df_filtered = main_df.join(file_df, how="anti", on="concat_all")
-
-            # Drop the 'concat_all' column after the join, if no longer needed
             main_df = main_df_filtered.drop("concat_all")
 
         
@@ -219,8 +217,14 @@ def create_final_df(main_interface, main_df):
         
             
 
+        elif 'drop_na' in file_path:
+            file_df = df_from_parquet(file_path)
+            main_df = main_df.with_columns(pl.arange(0, pl.count()).alias("temp_index"))
+            file_df = file_df.with_columns(pl.arange(0, pl.count()).alias("temp_index"))
 
-        
+            # Perform an anti-join based on the temporary index
+            main_df = main_df.join(file_df, on="temp_index", how="anti").drop("temp_index")
+            print(main_df)
             
 
     if os.path.exists(final_path):

@@ -16,7 +16,7 @@ from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
     imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
-    , encodingCategoryWidget
+    , encodingCategoryWidget , dropNaWidget
 from steps_widget import StepsWidget
 
 
@@ -44,6 +44,7 @@ class MainInterface(QWidget):
         self.drop_column_checkboxes = []
         self.remove_outlier_checkboxes = []
         self.encode_checkboxes =[]
+        self.drop_na_checkboxes = []
 
 
         self.prepare_project()
@@ -103,6 +104,7 @@ class MainInterface(QWidget):
         features = [
             # ("Drop Duplicates" , dropDuplicateWidget),
             ("Drop Columns", dropColumnWidget ),
+            ("Drop Missing" , dropNaWidget),
             ("Impute Missing", imputeMissingWidget ),
             ("Remove Outliers", removeOutlierWidget),
             ("Encode Categorical", encodingCategoryWidget ),

@@ -189,6 +189,103 @@ class imputeMissingWidget(featureWidget):
             checkbox.setChecked(False)
 
 
+class dropNaWidget(featureWidget):
+    def __init__(self, main_interface, steps_widget):
+        super().__init__(main_interface, steps_widget)
+        self.columns_to_drop = []
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
+
+        final_df = self.main_interface.main_df
+        columns = final_df.schema
+        columns = [col for col in columns if final_df[col].is_null().any()]
+
+        print("getting columns for dropping NA values")
+        for col in columns:
+            row_layout = QHBoxLayout()
+
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            row_layout.addWidget(col_label)
+
+            drop_checkbox = QCheckBox("Drop NA")
+            drop_checkbox.stateChanged.connect(
+                lambda state, c=col, columns=self.columns_to_drop: self.add_columns(
+                    col=c, state=state, columns=columns
+                )
+            )
+            row_layout.addWidget(drop_checkbox)
+            self.main_interface.drop_na_checkboxes.append((f"drop_na-{col}", drop_checkbox))
+
+            checkbox_map[("drop_na", col)] = drop_checkbox  # Store in shared checkbox map
+            
+            layout.addLayout(row_layout)
+
+        button_layout = QHBoxLayout()
+
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(lambda: self.drop_na(state=True, cols=self.columns_to_drop))
+
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.clicked.connect(self.clear_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+
+        layout.addLayout(button_layout)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(layout)
+
+    def drop_na(self, state, df=None, cols=None, name="drop_na", checkbox=None):
+    # Use the main dataframe from the interface if df is not provided
+        df = df if df is not None else self.main_interface.main_df
+
+        if state == 2 or state is True:
+            if cols:
+                print(f"Dropping NA values in columns: {cols}")
+                
+                # Check for null values only in the specified columns
+                null_condition = pl.fold(
+                    acc=pl.lit(False),
+                    function=lambda acc, col: acc | col.is_null(),
+                    exprs=[pl.col(col) for col in cols]  # Use only the specified columns
+                )
+                
+                # Get the rows that contain null values in the specified columns
+                null_rows = df.filter(null_condition)
+                
+                # Drop null values from the specified columns
+                # modified_df = df.drop_nulls(subset=cols)
+                
+                # Print or log the rows that were removed
+                print("Rows with null values:", null_rows)
+                
+                # Save the modified dataframe to a Parquet file
+                save_parquet_file(null_rows, name, cols, self.main_interface)
+                
+                # Update the table in the interface with the modified dataframe
+                self.main_interface.update_table()
+
+                print(f"Dropped NA values in column(s): {cols}")
+            
+            else:
+                # Handle the case where no columns are selected (maybe uncheck the checkbox)
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
+            
+            # Update the steps widget
+            self.steps_widget.update_steps()
+
+    def clear_all(self):
+        for name, checkbox in self.main_interface.drop_na_checkboxes:
+            checkbox.setChecked(False)
+
+    def add_columns(self, col, state, columns):
+        if state == 2:
+            columns.append(col)
+        else:
+            columns.remove(col)
+
+
 
 class encodingCategoryWidget(featureWidget):
     def __init__(self, main_interface , steps_widget):
@@ -417,8 +514,8 @@ class removeOutlierWidget(featureWidget):
                 
                 remove_checkbox = QCheckBox("Remove Outliers")
                 remove_checkbox.stateChanged.connect(
-                    lambda state, c=col, method_dropdown=method_dropdown: self.add_columns(
-                        col=c, state=state, method=method_dropdown.currentText().lower()
+                    lambda state, c=col, method_dropdown=method_dropdown, columns =self.columns_to_remove_outliers: self.add_columns(
+                        col=c, state=state, method=method_dropdown.currentText().lower() , columns= columns
                     )
                 )
                 row_layout.addWidget(method_dropdown)
@@ -443,15 +540,6 @@ class removeOutlierWidget(featureWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
-    def add_columns(self, col, state=False, method="iqr"):
-        if state == 2 or state is True:
-            self.columns_to_remove_outliers.append((col, method))
-            print(f"Column {col} added for outlier removal using {method}")
-            self.disable_checkbox(col, 'drop_column')  # Disable conflicting operations
-        else:
-            self.columns_to_remove_outliers = [(c, m) for c, m in self.columns_to_remove_outliers if c != col]
-            print(f"Column {col} removed from outlier removal")
-            self.enable_checkbox(col, 'drop_column')
 
     def remove_outlier(self, state, df=None, cols=None , methoh=None , name="remove_outlier", checkbox=None):
         df = self.main_interface.main_df
