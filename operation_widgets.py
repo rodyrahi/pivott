@@ -80,17 +80,26 @@ class featureWidget(QWidget):
             print(f"No checkbox found for action '{action_type}' on column: {column_name}")
 
 
-    def add_columns(self, col, state=False, strategy="mean" , columns = None ):
-        print(col)
-        print(columns)
+    def add_columns(self, col, state=False, strategy=None , columns = None ):
+       
 
 
         if state == 2 or state is True:
-            columns.append((col, strategy))
-            print(f"Column {col} added for imputation using {strategy}")
+            if strategy:
+
+                columns.append((col, strategy))
+                print(f"Column {col} added for imputation using {strategy}")
+            else:
+                columns.append(col)
+                print(f"Column {col} added for imputation")
         else:
-            columns.remove((col, strategy))
-            print(f"Column {col} removed from imputation")
+            if strategy:
+                columns.remove((col, strategy))
+                print(f"Column {col} removed from imputation using {strategy}")
+            else:
+                columns.remove(col)
+                print(f"Column {col} removed from imputation")
+
 
 
 
@@ -251,19 +260,18 @@ class dropNaWidget(featureWidget):
                     exprs=[pl.col(col) for col in cols]  # Use only the specified columns
                 )
                 
-                # Get the rows that contain null values in the specified columns
+                
                 null_rows = df.filter(null_condition)
                 
-                # Drop null values from the specified columns
-                # modified_df = df.drop_nulls(subset=cols)
+             
                 
-                # Print or log the rows that were removed
+                
                 print("Rows with null values:", null_rows)
                 
-                # Save the modified dataframe to a Parquet file
+               
                 save_parquet_file(null_rows, name, cols, self.main_interface)
                 
-                # Update the table in the interface with the modified dataframe
+               
                 self.main_interface.update_table()
 
                 print(f"Dropped NA values in column(s): {cols}")
@@ -279,11 +287,6 @@ class dropNaWidget(featureWidget):
         for name, checkbox in self.main_interface.drop_na_checkboxes:
             checkbox.setChecked(False)
 
-    def add_columns(self, col, state, columns):
-        if state == 2:
-            columns.append(col)
-        else:
-            columns.remove(col)
 
 
 
@@ -667,6 +670,7 @@ def process_file(main_interface , config=None , steps_widget = None):
     drop_column = dropColumnWidget(main_interface, steps_widget)
     remove_outlier = removeOutlierWidget(main_interface, steps_widget)
     encode = encodingCategoryWidget(main_interface, steps_widget)
+    drop_na = dropNaWidget(main_interface, steps_widget)
 
 
     for operation, details in config.items():
@@ -714,7 +718,20 @@ def process_file(main_interface , config=None , steps_widget = None):
                     if checkbox[0] == f"remove_outlier-{col}-{strategy}":
                         df = remove_outlier.remove_outlier(state=True, df = df ,cols=[col] ,  checkbox=checkbox[1] , method=strategy)
 
-        
+        if operation == "drop_na":
+            cols = details.get("col", [])
+    
+            for col in cols:
+                for checkbox in main_interface.drop_na_checkboxes:
+                    if checkbox[0] == f"drop_na-{col}":
+
+                        checkbox[1].blockSignals(True)
+                        checkbox[1].setChecked(True)
+                        checkbox[1].blockSignals(False)
+                        checkbox[1].parent().columns_to_drop.append(col)
+
+
+            df = drop_na.drop_na(state=True, df=df, cols=cols)
 
         if operation == "encode":
            

@@ -69,29 +69,23 @@ def create_json_file(file_path, data=None):
                 "col": [
                     
                 ],
-                "strategy": [
-                   
-                ]
+              
             },
             "remove_outlier": {
                 "col": [
                    
                 ],
-                "strategy": [
-                   
-                ]
+                
             },
             "encode":{
                 "col": [
 
                 ],
-                "strategy": [
-
-                ]
+                
             },
             "drop_na": {
                 "col": [],
-                "strategy": [],
+              
                 "file": ""
                 }
 
