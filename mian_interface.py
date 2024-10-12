@@ -16,7 +16,7 @@ from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
     imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
-    , encodingCategoryWidget , dropNaWidget , scaleMinmaxWidget
+    , encodingCategoryWidget , dropNaWidget , scaleMinmaxWidget , changeDtypeWidget
 from steps_widget import StepsWidget
 
 
@@ -46,6 +46,7 @@ class MainInterface(QWidget):
         self.encode_checkboxes =[]
         self.drop_na_checkboxes = []
         self.scale_minmax_checkboxes = []
+        self.change_dtype_checkboxes = []
 
         self.prepare_project()
         self.initUI()
@@ -108,7 +109,8 @@ class MainInterface(QWidget):
             ("Impute Missing", imputeMissingWidget ),
             ("Remove Outliers", removeOutlierWidget),
             ("Encode Categorical", encodingCategoryWidget ),
-            ("Scale MinMax", scaleMinmaxWidget)
+            ("Scale MinMax", scaleMinmaxWidget),
+            ("Change Dtype", changeDtypeWidget)
 
         ]
 

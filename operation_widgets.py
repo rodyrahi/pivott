@@ -660,68 +660,82 @@ class scaleMinmaxWidget(featureWidget):
 
     def initUI(self):
         layout = QVBoxLayout()
-        print(self.main_interface.current_df)
-
+        
         final_df = self.main_interface.main_df
         columns = final_df.columns
         dtypes = final_df.dtypes
 
-        # Use Polars data types to filter for numeric columns
+        # Filter for numeric columns using Polars data types
         columns = [
             col for col, dtype in zip(columns, dtypes)
             if pl.Int64 == dtype or pl.Float64 == dtype
         ]
 
-        print("getting columns for MinMax scaling")
-        for col in columns:
-            row_layout = QHBoxLayout()
+        print("Getting columns for MinMax scaling")
 
+        # Use QGridLayout for a compact, structured layout
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(10)  # Reduce spacing to make it more compact
+
+        for i, col in enumerate(columns):
             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
-            row_layout.addWidget(col_label)
+            grid_layout.addWidget(col_label, i, 0)
 
+            # Checkbox for scaling
             scale_checkbox = QCheckBox("Scale")
+            grid_layout.addWidget(scale_checkbox, i, 1)
 
-            row_layout.addWidget(scale_checkbox)
-
-            # Create QLineEdit for min and max with numerical input validation
+            # Min input with reduced width
             min_input = QLineEdit()
             min_input.setPlaceholderText("Min")
             min_input.setValidator(QDoubleValidator())  # Allow floating-point values only
-            row_layout.addWidget(min_input)
+            min_input.setFixedWidth(60)
+            grid_layout.addWidget(min_input, i, 2)
 
+            # Max input with reduced width
             max_input = QLineEdit()
             max_input.setPlaceholderText("Max")
             max_input.setValidator(QDoubleValidator())  # Allow floating-point values only
-            row_layout.addWidget(max_input)
+            max_input.setFixedWidth(60)
+            grid_layout.addWidget(max_input, i, 3)
 
-        
-            
+            # Connect the checkbox to the event handler
             scale_checkbox.stateChanged.connect(
-                lambda state, c=col, columns=self.columns_to_scale , strategy=(min_input, max_input): self.add_columns(
-                    col=c, state=state, strategy=(strategy[0].text() , strategy[-1].text()) , columns=columns
+                lambda state, c=col, columns=self.columns_to_scale, strategy=(min_input, max_input): self.add_columns(
+                    col=c, state=state, strategy=(strategy[0].text(), strategy[-1].text()), columns=columns
                 )
             )
 
             self.main_interface.scale_minmax_checkboxes.append((f"scale_minmax-{col}", scale_checkbox, min_input, max_input))
+            checkbox_map[("scale_minmax", col)] = (scale_checkbox, min_input, max_input)
 
-            checkbox_map[("scale_minmax", col)] = (scale_checkbox, min_input, max_input)  # Store in shared checkbox map
+        # Add grid layout to the main layout
+        layout.addLayout(grid_layout)
 
-            layout.addLayout(row_layout)
-
+        # Button layout
         button_layout = QHBoxLayout()
 
+        # Clear All Button
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.setFixedWidth(80)
+        button_layout.addWidget(clear_all_button, alignment=Qt.AlignmentFlag.AlignRight)
+        clear_all_button.clicked.connect(self.clear_all)
+
+        # Apply Button
         apply_button = smallButton("Apply")
+        apply_button.setFixedWidth(80)
+        button_layout.addWidget(apply_button, alignment=Qt.AlignmentFlag.AlignRight)
         apply_button.clicked.connect(self.apply_scale_minmax)
 
-        clear_all_button = smallButton("Clear All")
-        clear_all_button.clicked.connect(self.clear_all)
-        button_layout.addWidget(clear_all_button)
-        button_layout.addWidget(apply_button)
-
+        # Add button layout to main layout
         layout.addLayout(button_layout)
+
+        # Align layout to the top
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(layout)
         
+        self.setLayout(layout)
+
+
     def apply_scale_minmax(self):
         cols_to_scale = []
         min_max_values = {}
@@ -779,6 +793,124 @@ class scaleMinmaxWidget(featureWidget):
             checkbox.setChecked(False)
             min_input.clear()
             max_input.clear()
+
+class changeDtypeWidget(featureWidget):
+    def __init__(self, main_interface, steps_widget):
+        super().__init__(main_interface, steps_widget)
+        self.columns_to_change = []
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        
+        final_df = self.main_interface.main_df
+        columns = final_df.columns
+
+        print("Getting columns for dtype change")
+        
+        for col in columns:
+            row_layout = QHBoxLayout()
+
+            # Label for column name
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            row_layout.addWidget(col_label)
+
+            # Combo box for selecting dtype
+            dtype_combo = QComboBox()
+            dtype_combo.addItems(["Int64", "Float64", "String", "Boolean", "Datetime"])
+            dtype_combo.setFixedWidth(100)  # Adjusted width for better appearance
+            row_layout.addWidget(dtype_combo, alignment=Qt.AlignmentFlag.AlignRight)
+
+            # Checkbox for applying dtype change
+            change_checkbox = QCheckBox("Change")
+            row_layout.addWidget(change_checkbox )
+
+            # Connect checkbox to state change handler
+            change_checkbox.stateChanged.connect(
+                lambda state, c=col, columns=self.columns_to_change, dtype_combo=dtype_combo: self.add_columns(
+                    col=c, state=state, strategy=dtype_combo.currentText(), columns=columns
+                )
+            )
+
+            # Store the checkbox and combo box
+            self.main_interface.change_dtype_checkboxes.append((f"change_dtype-{col}", change_checkbox, dtype_combo))
+            checkbox_map[("change_dtype", col)] = (change_checkbox, dtype_combo)
+
+            # Add row layout to main layout
+            layout.addLayout(row_layout)
+
+        # Layout for buttons
+        button_layout = QHBoxLayout()
+        
+        # Clear All Button
+        clear_all_button = smallButton("Clear All")
+        clear_all_button.setFixedWidth(100)
+        button_layout.addWidget(clear_all_button, alignment=Qt.AlignmentFlag.AlignLeft)
+        clear_all_button.clicked.connect(self.clear_all)
+
+        # Apply Button
+        apply_button = smallButton("Apply")
+        apply_button.setFixedWidth(100)
+        button_layout.addWidget(apply_button, alignment=Qt.AlignmentFlag.AlignLeft)
+        apply_button.clicked.connect(self.apply_change_dtype)
+
+        # Add button layout to main layout
+        layout.addLayout(button_layout)
+        
+        # Ensure main layout is aligned at the top
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
+        self.setLayout(layout)    
+    def apply_change_dtype(self):
+        cols_to_change = []
+        dtype_changes = {}
+        for name, checkbox, dtype_combo in self.main_interface.change_dtype_checkboxes:
+            if checkbox.isChecked():
+                col = name.split('-')[1]
+                cols_to_change.append(col)
+                dtype_changes[col] = dtype_combo.currentText()
+        
+        self.change_dtype(state=True, cols=self.columns_to_change, dtype_changes=dtype_changes)
+
+    def change_dtype(self, state, df=None, cols=None, dtype_changes=None, name="change_dtype", checkbox=None):
+        df = df if df is not None else self.main_interface.main_df
+
+        if state == 2 or state is True:
+            if cols:
+                print(f"Changing data types for columns: {cols}")
+                
+                changed_df = df.clone()
+                for col, new_dtype in cols:
+                    print(f"Changing {col} to {new_dtype}")
+                    if new_dtype == "Int64":
+                        changed_df = changed_df.with_columns(pl.col(col).cast(pl.Int64))
+                    elif new_dtype == "Float64":
+                        changed_df = changed_df.with_columns(pl.col(col).cast(pl.Float64))
+                    elif new_dtype == "String":
+                        changed_df = changed_df.with_columns(pl.col(col).cast(pl.Utf8))
+                    elif new_dtype == "Boolean":
+                        changed_df = changed_df.with_columns(pl.col(col).cast(pl.Boolean))
+                    elif new_dtype == "Datetime":
+                        changed_df = changed_df.with_columns(pl.col(col).cast(pl.Datetime))
+                
+                cols_to_save = [col for col, _ in cols]
+                save_parquet_file(changed_df[cols_to_save], name, cols, self.main_interface)
+                
+                self.main_interface.update_table()
+
+                print(f"Changed data types for column(s): {cols}")
+            
+            else:
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
+            
+            self.steps_widget.update_steps()
+
+    def clear_all(self):
+        for name, checkbox, dtype_combo in self.main_interface.change_dtype_checkboxes:
+            checkbox.setChecked(False)
+            dtype_combo.setCurrentIndex(0)
+
+
+
 
 def process_file(main_interface , steps_widget = None):
     
