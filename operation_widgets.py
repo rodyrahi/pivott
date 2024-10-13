@@ -83,26 +83,32 @@ class featureWidget(QWidget):
     def add_columns(self, col, state=False, strategy=None , columns = None ):
        
 
-
+        print(columns)
         if state == 2 or state is True:
             if strategy:
 
-                columns.append((col, strategy))
+                columns.append([col, strategy])
                 print(f"Column {col} added for imputation using {strategy}")
             else:
                 columns.append(col)
                 print(f"Column {col} added for imputation")
         else:
             if strategy:
+ 
                 
-                columns.remove((col, strategy))
-                
+    
+                columns.remove([col , strategy])
                 print(f"Column {col} removed from imputation using {strategy}")
             else:
                 columns.remove(col)
                 print(f"Column {col} removed from imputation")
 
-
+    def get_final_df(self):
+        final_df_path = self.main_interface.current_df[0].replace("df.parquet", "final_df.parquet")
+        if os.path.exists(final_df_path):
+            return  pl.read_parquet(final_df_path)
+        else:
+            return self.main_interface.main_df
 
 
 
@@ -161,7 +167,12 @@ class imputeMissingWidget(featureWidget):
 
 
     def impute_missing(self, state, df=None, cols=None, name="impute", checkbox=None):
-        df = self.main_interface.main_df
+        
+        
+        
+        
+        
+        df = self.get_final_df()
 
         if state == 2 or state is True:
             print(f"Imputing missing values in columns: {cols}")
@@ -248,7 +259,7 @@ class dropNaWidget(featureWidget):
 
     def drop_na(self, state, df=None, cols=None, name="drop_na", checkbox=None):
     # Use the main dataframe from the interface if df is not provided
-        df = df if df is not None else self.main_interface.main_df
+        df = self.get_final_df()
 
         if state == 2 or state is True:
             if cols:
@@ -341,7 +352,9 @@ class encodingCategoryWidget(featureWidget):
 
 
     def encode_category(self, state, df=None, cols=None, name="encode", checkbox=None , strategy=None):
-        df = self.main_interface.main_df
+        
+        df = self.get_final_df()
+
 
         if state == 2 or state is True:
             print(f"Encoding categorical values in columns: {cols}")
@@ -400,7 +413,8 @@ class dropColumnWidget(featureWidget):
             
         
             checkbox = QCheckBox("Drop Column")
-            checkbox.stateChanged.connect(lambda state , col=col  : self.add_columns(col=col , state=state  ))
+            checkbox.stateChanged.connect(
+                lambda state , col=col , columns=self.columns_to_drop  : self.add_columns(col=col , state=state , columns=columns  ))
 
             row_layout.addWidget(checkbox)
             self.main_interface.drop_column_checkboxes.append((f"drop_column-{col}", checkbox))
@@ -435,25 +449,25 @@ class dropColumnWidget(featureWidget):
 
     
     
-    def add_columns(self , col , state=False):
-        if state == 2 or state == True:
+    # def add_columns(self , col , state=False):
+    #     if state == 2 or state == True:
                 
-            self.columns_to_drop.append(col)
-            print("col appended " , col)
+    #         self.columns_to_drop.append(col)
+    #         print("col appended " , col)
 
-            self.disable_checkbox(col , 'impute')
-            self.disable_checkbox(col , 'iqr')    
-        else:
-            self.columns_to_drop.remove(col)
-            print("col removed" , col)
-            self.enable_checkbox(col , 'impute')
-            self.enable_checkbox(col , 'iqr')    
+    #         self.disable_checkbox(col , 'impute')
+    #         self.disable_checkbox(col , 'iqr')    
+    #     else:
+    #         self.columns_to_drop.remove(col)
+    #         print("col removed" , col)
+    #         self.enable_checkbox(col , 'impute')
+    #         self.enable_checkbox(col , 'iqr')    
 
     
     
     def drop_column(self, state, df=None, cols=None, strategy=None, name="drop_column", checkbox=None):
         
-        df = self.main_interface.main_df
+        df = self.get_final_df()
 
         if state == 2 or state == True :
             print("Dropping column(s)")
@@ -516,7 +530,7 @@ class removeOutlierWidget(featureWidget):
                 remove_checkbox = QCheckBox("Remove Outliers")
                 remove_checkbox.stateChanged.connect(
                     lambda state, c=col, method_dropdown=method_dropdown, columns =self.columns_to_remove_outliers: self.add_columns(
-                        col=c, state=state, method=method_dropdown.currentText().lower() , columns= columns
+                        col=c, state=state, strategy=method_dropdown.currentText().lower() , columns= columns
                     )
                 )
                 row_layout.addWidget(method_dropdown)
@@ -543,7 +557,7 @@ class removeOutlierWidget(featureWidget):
 
 
     def remove_outlier(self, state, df=None, cols=None , methoh=None , name="remove_outlier", checkbox=None):
-        df = self.main_interface.main_df
+        df = self.get_final_df()
 
         if state == 2 or state is True:
             print(f"Removing outliers from columns: {cols}")
@@ -702,7 +716,7 @@ class scaleMinmaxWidget(featureWidget):
             # Connect the checkbox to the event handler
             scale_checkbox.stateChanged.connect(
                 lambda state, c=col, columns=self.columns_to_scale, strategy=(min_input, max_input): self.add_columns(
-                    col=c, state=state, strategy=(strategy[0].text(), strategy[-1].text()), columns=columns
+                    col=c, state=state, strategy=[str(strategy[0].text()), str(strategy[-1].text())], columns=columns
                 )
             )
 
@@ -756,7 +770,7 @@ class scaleMinmaxWidget(featureWidget):
         from sklearn.preprocessing import MinMaxScaler
         import numpy as np
         
-        df = df if df is not None else self.main_interface.main_df
+        df = self.get_final_df()
 
         if state == 2 or state is True:
             if cols:
@@ -872,7 +886,7 @@ class changeDtypeWidget(featureWidget):
         self.change_dtype(state=True, cols=self.columns_to_change, dtype_changes=dtype_changes)
 
     def change_dtype(self, state, df=None, cols=None, dtype_changes=None, name="change_dtype", checkbox=None):
-        df = df if df is not None else self.main_interface.main_df
+        df = self.get_final_df()
 
         if state == 2 or state is True:
             if cols:
@@ -982,6 +996,27 @@ def process_file(main_interface , steps_widget = None):
                     
                     if checkbox[0] == f"remove_outlier-{col}-{strategy}":
                         df = remove_outlier.remove_outlier(state=True, df = df ,cols=[col] ,  checkbox=checkbox[1] , method=strategy)
+        
+        
+        
+        if operation == "encode":
+           
+            cols = details.get("col", [])
+
+            for col in cols:
+                for checkbox in main_interface.encode_checkboxes:
+                   
+                    print(col)
+                    if checkbox[0] == f"encode-{col[0]}":
+                        print("Encoding")
+                        checkbox[1].blockSignals(True)
+                        checkbox[1].setChecked(True)
+                        checkbox[1].blockSignals(False)
+                        checkbox[1].parent().columns_to_encode.append([col[0] , col[-1]])
+
+                        df = encode.encode_category(state=True, df=df, cols=[(col[0] , col[-1])], strategy=col[-1], checkbox=checkbox[1])
+
+
 
         if operation == "drop_na":
             cols = details.get("col", [])
@@ -998,23 +1033,7 @@ def process_file(main_interface , steps_widget = None):
 
             df = drop_na.drop_na(state=True, df=df, cols=cols)
 
-        if operation == "encode":
-           
-            cols = details.get("col", [])
-
-            for col in cols:
-                for checkbox in main_interface.encode_checkboxes:
-                   
-                    print(col)
-                    if checkbox[0] == f"encode-{col[0]}":
-                        print("Encoding")
-                        checkbox[1].blockSignals(True)
-                        checkbox[1].setChecked(True)
-                        checkbox[1].blockSignals(False)
-                        checkbox[1].parent().columns_to_encode.append((col[0] , col[-1]))
-
-                        df = encode.encode_category(state=True, df=df, cols=[(col[0] , col[-1])], strategy=col[-1], checkbox=checkbox[1])
-
+                
 
         if operation == "scale_minmax":
            
@@ -1024,7 +1043,7 @@ def process_file(main_interface , steps_widget = None):
                 for checkbox in main_interface.scale_minmax_checkboxes:
                    
                     
-                    print(checkbox)
+                    
                     if checkbox[0] == f"scale_minmax-{col[0]}":
                         print("Scaling MinMax")
                         checkbox[1].blockSignals(True)

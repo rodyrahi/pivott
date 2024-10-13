@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
 
         self.project_path = ""
 
-        self.updater = AutoUpdater(current_version="0.3", version_url="https://pivott.click/software_version.json")
+        self.updater = AutoUpdater(current_version="0.6", version_url="https://pivott.click/software_version.json")
         
         self.setWindowTitle('Two Column Main Window')
         self.setWindowIcon(QIcon('icon.png'))
@@ -135,8 +135,7 @@ class MainWindow(QMainWindow):
         if update_url:
             reply = QMessageBox.question(self, "Update Available",
                                         "A new update is available. Do you want to download and install it?",
-                                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                                        QMessageBox.StandardButton.No)
+                                        QMessageBox.StandardButton.Yes)
 
             if reply == QMessageBox.StandardButton.Yes:
                 # Create a simple dialog window with a progress message

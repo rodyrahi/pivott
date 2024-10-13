@@ -1,4 +1,5 @@
 import json
+import os
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 
@@ -6,7 +7,8 @@ from custom_widgets import stepButton , Button
 from operation_widgets import process_file
 from file_functions import update_remove_json_file
 
-
+from collapsable_widgets import CollapsableWidget
+from operation_widgets import on_uncheck_checkbox
 
 class StepsWidget(QWidget):
     def __init__(self , main_interface):
@@ -79,9 +81,29 @@ class StepsWidget(QWidget):
             self.main_layout.addLayout(button_layout)
 
     def remove_step(self , op):
-        pass        
-        # update_remove_json_file(self.main_interface , f"{op}-remove")
-        # process_file(self.main_interface , self)
+        all_checkbox = [self.main_interface.impute_checkboxes,
+        self.main_interface.drop_column_checkboxes ,
+        self.main_interface.remove_outlier_checkboxes ,
+        self.main_interface.encode_checkboxes ,
+        self.main_interface.drop_na_checkboxes ,
+        self.main_interface.scale_minmax_checkboxes ,
+        self.main_interface.change_dtype_checkboxes ]
+
+        for checkboxes in all_checkbox:
+            for checkbox in checkboxes:
+                if op in checkbox[0]:
+                    checkbox[-1].setChecked(False)
+                    for i in self.main_interface.current_df:
+                        
+    
+                        if f"df_{op}.parquet" in i:
+                            self.main_interface.current_df.remove(i)
+                            if os.path.exists(i):
+                                os.remove(i)
+
+                    # on_uncheck_checkbox(self.main_interface , name=op , strategy=None)
+        update_remove_json_file(self.main_interface , f"{op}-remove")
+        process_file(self.main_interface , self)
 
 
 

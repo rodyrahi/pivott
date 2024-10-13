@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "pivott"
-#define MyAppVersion "0.03"
+#define MyAppVersion "0.5"
 #define MyAppPublisher "pivott"
 #define MyAppURL "https://www.pivott.click/"
 #define MyAppExeName "pivott.exe"
