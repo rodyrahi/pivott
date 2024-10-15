@@ -679,7 +679,6 @@ class scaleMinmaxWidget(featureWidget):
         columns = final_df.columns
         dtypes = final_df.dtypes
 
-        # Filter for numeric columns using Polars data types
         columns = [
             col for col, dtype in zip(columns, dtypes)
             if pl.Int64 == dtype or pl.Float64 == dtype
@@ -687,33 +686,35 @@ class scaleMinmaxWidget(featureWidget):
 
         print("Getting columns for MinMax scaling")
 
-        # Use QGridLayout for a compact, structured layout
         grid_layout = QGridLayout()
-        grid_layout.setSpacing(10)  # Reduce spacing to make it more compact
+        grid_layout.setSpacing(10)
 
         for i, col in enumerate(columns):
             col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
             grid_layout.addWidget(col_label, i, 0)
 
-            # Checkbox for scaling
             scale_checkbox = QCheckBox("Scale")
+            scale_checkbox.setEnabled(False)  # Initially disable the checkbox
             grid_layout.addWidget(scale_checkbox, i, 1)
 
-            # Min input with reduced width
             min_input = QLineEdit()
             min_input.setPlaceholderText("Min")
-            min_input.setValidator(QDoubleValidator())  # Allow floating-point values only
+            min_input.setValidator(QDoubleValidator())
             min_input.setFixedWidth(60)
             grid_layout.addWidget(min_input, i, 2)
 
-            # Max input with reduced width
             max_input = QLineEdit()
             max_input.setPlaceholderText("Max")
-            max_input.setValidator(QDoubleValidator())  # Allow floating-point values only
+            max_input.setValidator(QDoubleValidator())
             max_input.setFixedWidth(60)
             grid_layout.addWidget(max_input, i, 3)
 
-            # Connect the checkbox to the event handler
+            def update_checkbox_state(checkbox, min_input, max_input):
+                checkbox.setEnabled(bool(min_input.text()) and bool(max_input.text()))
+
+            min_input.textChanged.connect(lambda _, c=scale_checkbox, mi=min_input, ma=max_input: update_checkbox_state(c, mi, ma))
+            max_input.textChanged.connect(lambda _, c=scale_checkbox, mi=min_input, ma=max_input: update_checkbox_state(c, mi, ma))
+
             scale_checkbox.stateChanged.connect(
                 lambda state, c=col, columns=self.columns_to_scale, strategy=(min_input, max_input): self.add_columns(
                     col=c, state=state, strategy=[str(strategy[0].text()), str(strategy[-1].text())], columns=columns
@@ -723,32 +724,25 @@ class scaleMinmaxWidget(featureWidget):
             self.main_interface.scale_minmax_checkboxes.append((f"scale_minmax-{col}", scale_checkbox, min_input, max_input))
             checkbox_map[("scale_minmax", col)] = (scale_checkbox, min_input, max_input)
 
-        # Add grid layout to the main layout
         layout.addLayout(grid_layout)
 
-        # Button layout
         button_layout = QHBoxLayout()
 
-        # Clear All Button
         clear_all_button = smallButton("Clear All")
         clear_all_button.setFixedWidth(80)
         button_layout.addWidget(clear_all_button, alignment=Qt.AlignmentFlag.AlignRight)
         clear_all_button.clicked.connect(self.clear_all)
 
-        # Apply Button
         apply_button = smallButton("Apply")
         apply_button.setFixedWidth(80)
         button_layout.addWidget(apply_button, alignment=Qt.AlignmentFlag.AlignRight)
         apply_button.clicked.connect(self.apply_scale_minmax)
 
-        # Add button layout to main layout
         layout.addLayout(button_layout)
 
-        # Align layout to the top
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         
         self.setLayout(layout)
-
 
     def apply_scale_minmax(self):
         cols_to_scale = []
@@ -807,6 +801,8 @@ class scaleMinmaxWidget(featureWidget):
             checkbox.setChecked(False)
             min_input.clear()
             max_input.clear()
+            checkbox.setEnabled(False)  # Disable checkbox when clearing
+
 
 class changeDtypeWidget(featureWidget):
     def __init__(self, main_interface, steps_widget):
@@ -923,7 +919,88 @@ class changeDtypeWidget(featureWidget):
             checkbox.setChecked(False)
             dtype_combo.setCurrentIndex(0)
 
+class changeTextCaseWidget(featureWidget):
+    def __init__(self, main_interface, steps_widget):
+        super().__init__(main_interface, steps_widget)
+        self.columns_to_change = []
 
+    def initUI(self):
+        layout = QVBoxLayout()
+        print(self.main_interface.current_df)
+
+        final_df = self.main_interface.main_df
+        columns = final_df.schema
+        columns = [col for col in columns if final_df[col].dtype == pl.Utf8]
+
+        print("getting columns for changing text case")
+        for col in columns:
+            row_layout = QHBoxLayout()
+
+            col_label = QLabel(col[:20] + '...' if len(col) > 20 else col)
+            row_layout.addWidget(col_label)
+
+            case_combo = QComboBox()
+            case_combo.addItems(["Original", "Uppercase", "Lowercase"])
+            case_combo.currentIndexChanged.connect(
+                lambda index, c=col: self.add_columns(col=c, state=index, columns=self.columns_to_change)
+            )
+            row_layout.addWidget(case_combo)
+            self.main_interface.change_text_case_checkboxes.append((f"change_case-{col}", case_combo))
+
+            checkbox_map[("change_case", col)] = case_combo  # Store in shared checkbox map
+            
+            layout.addLayout(row_layout)
+
+        button_layout = QHBoxLayout()
+
+        apply_button = smallButton("Apply")
+        apply_button.clicked.connect(lambda: self.change_case(state=True, cols=self.columns_to_change))
+
+        clear_all_button = smallButton("Reset All")
+        clear_all_button.clicked.connect(self.reset_all)
+        button_layout.addWidget(clear_all_button)
+        button_layout.addWidget(apply_button)
+
+        layout.addLayout(button_layout)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(layout)
+
+    def change_case(self, state, df=None, cols=None, name="change_case", combo=None):
+        df = self.get_final_df()
+
+        if state == 2 or state is True:
+            if cols:
+                print(f"Changing text case in columns: {cols}")
+                
+                changed_df = df.clone()
+                for col, case in cols:
+                    if case == "Uppercase":
+                        changed_df = changed_df.with_columns(pl.col(col).str.to_uppercase().alias(col))
+                    elif case == "Lowercase":
+                        changed_df = changed_df.with_columns(pl.col(col).str.to_lowercase().alias(col))
+                
+                cols_to_save = [col for col, _ in cols]
+                save_parquet_file(changed_df[cols_to_save], name, cols, self.main_interface)
+                
+                self.main_interface.update_table()
+
+                print(f"Changed text case in column(s): {cols}")
+            
+            else:
+                on_uncheck_checkbox(self.main_interface, name=f"{name}")
+            
+            self.steps_widget.update_steps()
+
+    def reset_all(self):
+        for name, combo in self.main_interface.change_case_combos:
+            combo.setCurrentIndex(0)
+
+    def add_columns(self, col, state, columns):
+        if state != 0:  # 0 is "Original"
+            case = "Uppercase" if state == 1 else "Lowercase"
+            columns.append((col, case))
+        else:
+            columns[:] = [item for item in columns if item[0] != col]
 
 
 def process_file(main_interface , steps_widget = None):
@@ -960,7 +1037,7 @@ def process_file(main_interface , steps_widget = None):
                         checkbox[1].blockSignals(True)
                         checkbox[1].setChecked(True)
                         checkbox[1].blockSignals(False)
-                        checkbox[1].parent().columns_to_impute.append((col[0] , col[-1]))
+                        checkbox[1].parent().columns_to_impute.append([col[0] , col[-1]])
 
                         df = impute.impute_missing(state=True, df=df, cols=[(col[0] , col[-1])], checkbox=checkbox[1])
 

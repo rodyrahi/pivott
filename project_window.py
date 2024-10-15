@@ -9,6 +9,7 @@ from select_file_widget import SelectFileWidget
 from custom_widgets import MainButton , Button , CollapsibleButton
 from mian_interface import MainInterface
 from file_functions import create_json_file
+from pivott import varsion
 
 
 class ProjectWidget(QWidget):
@@ -44,7 +45,7 @@ class ProjectWidget(QWidget):
         software_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Software version
-        version_label = QLabel("Version 1.0.0")
+        version_label = QLabel(f"Version {varsion}")
         version_label.setStyleSheet("font-size: 14px; color: gray;")
         version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

@@ -16,9 +16,10 @@ from dataframeinfo import dataframeinfo
 from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
     imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
-    , encodingCategoryWidget , dropNaWidget , scaleMinmaxWidget , changeDtypeWidget
+    , encodingCategoryWidget , dropNaWidget , scaleMinmaxWidget , changeDtypeWidget, changeTextCaseWidget
+    
 from steps_widget import StepsWidget
-
+from code_genratation.python_code_genration import create_jupyter_notebook
 
 
 from file_functions import create_folder , read_save_parquet , df_from_parquet\
@@ -47,6 +48,7 @@ class MainInterface(QWidget):
         self.drop_na_checkboxes = []
         self.scale_minmax_checkboxes = []
         self.change_dtype_checkboxes = []
+        self.change_text_case_checkboxes = []
 
         self.prepare_project()
         self.initUI()
@@ -110,7 +112,8 @@ class MainInterface(QWidget):
             ("Remove Outliers", removeOutlierWidget),
             ("Encode Categorical", encodingCategoryWidget ),
             ("Scale MinMax", scaleMinmaxWidget),
-            ("Change Dtype", changeDtypeWidget)
+            ("Change Dtype", changeDtypeWidget),
+            ("Change Text Case", changeTextCaseWidget)
 
         ]
 
@@ -143,6 +146,11 @@ class MainInterface(QWidget):
         main_layout.addLayout(self.table_layout, 70)
         main_layout.addLayout(self.properties_layout, 30)
         main_layout.addLayout(self.steps_layout, 10)
+
+        export_button = Button("Exoprt ipynb")
+        self.table_bottom_layout.addWidget(export_button)
+        export_button.clicked.connect(lambda: create_jupyter_notebook(read_json_file(self.project_path) , "test_python" ))
+
 
         self.properties_layout.addWidget(aiButton("Clean With AI ✨"))
 

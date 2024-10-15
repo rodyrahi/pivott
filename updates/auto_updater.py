@@ -20,7 +20,7 @@ class AutoUpdater:
             current_version (str): The current version of the software.
             version_url (str): The URL to the version manifest (JSON) on the remote server.
         """
-        self.current_version = current_version
+        self.current_version = float(current_version)
         self.version_url = version_url
 
     def check_for_updates(self):
@@ -28,7 +28,7 @@ class AutoUpdater:
         try:
             response = requests.get(self.version_url)
             data = json.loads(response.text)
-            latest_version = data["version"]
+            latest_version = float(data["version"])
             
             if latest_version > self.current_version:
                 return data["update_url"]

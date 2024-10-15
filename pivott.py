@@ -15,6 +15,7 @@ from custom_widgets import MainButton , Button
 
 
 
+varsion = 0.9
 
 class DownloadThread(QThread):
     # Custom signal to emit when download is complete
@@ -37,7 +38,7 @@ class MainWindow(QMainWindow):
 
         self.project_path = ""
 
-        self.updater = AutoUpdater(current_version="0.6", version_url="https://pivott.click/software_version.json")
+        self.updater = AutoUpdater(current_version=varsion, version_url="https://pivott.click/software_version.json")
         
         self.setWindowTitle('Two Column Main Window')
         self.setWindowIcon(QIcon('icon.png'))
