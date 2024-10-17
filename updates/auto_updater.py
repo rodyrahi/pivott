@@ -30,6 +30,7 @@ class AutoUpdater:
             data = json.loads(response.text)
             latest_version = float(data["version"])
             
+            print(f"Current Version: {self.current_version} , Latest Version: {latest_version}")
             if latest_version > self.current_version:
                 return data["update_url"]
             else:

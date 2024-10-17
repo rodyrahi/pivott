@@ -12,7 +12,9 @@ import numpy as np
 from custom_widgets import MainButton , Button , aiButton
 # from dataframe_table import tableWidget
 from table_widget import OptimizedTableWidget
-from dataframeinfo import dataframeinfo
+
+from dataframeinfo_top import DataFrameInfoWidget
+
 from collapsable_widgets import CollapsableWidget
 from operation_widgets import dropDuplicateWidget ,\
     imputeMissingWidget , dropColumnWidget , removeOutlierWidget, process_file \
@@ -84,7 +86,7 @@ class MainInterface(QWidget):
 
         
         main_layout = QHBoxLayout()
-
+        self.table_top_layout = QVBoxLayout()
         self.table_layout = QVBoxLayout()
         self.properties_layout = QVBoxLayout()
         self.steps_layout = QVBoxLayout()
@@ -96,6 +98,7 @@ class MainInterface(QWidget):
 
         self.dataframe_columns = self.main_df.columns
         print(self.dataframe_columns)
+        self.table_layout.addLayout(self.table_top_layout)
 
         self.table_layout.addWidget(self.table_widget)
 
@@ -143,8 +146,8 @@ class MainInterface(QWidget):
       
         self.properties_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.addLayout(self.table_layout, 70)
-        main_layout.addLayout(self.properties_layout, 30)
+        main_layout.addLayout(self.table_layout, 65)
+        main_layout.addLayout(self.properties_layout, 35)
         main_layout.addLayout(self.steps_layout, 10)
 
         export_button = Button("Exoprt ipynb")
@@ -152,8 +155,12 @@ class MainInterface(QWidget):
         export_button.clicked.connect(lambda: create_jupyter_notebook(read_json_file(self.project_path) , "test_python" ))
 
 
-        self.properties_layout.addWidget(aiButton("Clean With AI ✨"))
+  
 
+        df_info = DataFrameInfoWidget(self.main_df)
+        self.table_top_layout.addWidget(df_info)
+
+        self.properties_layout.addWidget(aiButton("Clean With AI ✨"))
         self.setLayout(main_layout)
 
        
@@ -182,4 +189,4 @@ class MainInterface(QWidget):
             df = self.main_df
             self.table_widget.setData(df)
 
-    
+

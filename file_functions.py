@@ -5,7 +5,7 @@ import pandas as pd
 import polars as pl
 from functools import cache
 
-
+from optimize_dataframe import optimize_dataframe
 
 
 
@@ -59,37 +59,44 @@ def create_json_file(file_path, data=None):
     data = {
 
             "data_path": "",
-            "drop_column": {
-                    "col": []
-                },
+               "drop_column": {
+                "col": [],
+                "file": ""
+            },
             "dropna": {
                 "col": []
             },
             "impute": {
-                "col": [
-                    
-                ],
-              
+                "col": [],
+                "file": ""
             },
             "remove_outlier": {
-                "col": [
-                   
-                ],
-                
+                "col": [],
+                "file": ""
             },
-            "encode":{
-                "col": [
-
-                ],
-                
+            "encode": {
+                "col": [],
+                "file": ""
+            },
+            "scale_minmax": {
+                "col": [],
+                "file": ""
+            },
+            "change_dtype": {
+                "col": [],
+                "file": ""
             },
             "drop_na": {
                 "col": [],
-              
                 "file": ""
-                }
-
-        }
+            },
+            "change_case": {
+                "col": [
+                   
+                ],
+                "file": ""
+            }}
+        
 
     with open(file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
@@ -110,6 +117,7 @@ def df_from_parquet(file , engine = 'pandas'):
         df = pl.read_parquet(file)
     else:
         df = pl.read_parquet(file)
+        # df = optimize_dataframe(df)
     return df
 
 

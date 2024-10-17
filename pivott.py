@@ -3,6 +3,7 @@ import cProfile
 import pstats
 import json
 import sys
+import traceback
 from PyQt6.QtWidgets import *
 import qdarkstyle
 import pandas as pd
@@ -15,7 +16,7 @@ from custom_widgets import MainButton , Button
 
 
 
-varsion = 0.9
+varsion = 1.1
 
 class DownloadThread(QThread):
     # Custom signal to emit when download is complete
@@ -182,17 +183,66 @@ class MainWindow(QMainWindow):
 
 
 
+def handle_exception(exc_type, exc_value, exc_traceback):
+    # Format the traceback
+    error_message = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    
+    # Create a custom dialog to display the error
+    error_dialog = QDialog()
+    error_dialog.setWindowTitle("Critical Error")
+    error_dialog.setFixedSize(600, 300)  # Set fixed size to make it look like an alert
+
+    # Create the layout
+    main_layout = QVBoxLayout()
+
+    # Error icon and message layout (to simulate an alert)
+    alert_layout = QHBoxLayout()
+    
+    # Add an icon to make it look like an alert
+    icon_label = QLabel()
+    icon_label.setPixmap(QIcon.fromTheme("dialog-error").pixmap(QSize(48, 48)))  # Critical error icon
+    alert_layout.addWidget(icon_label)
+
+    # Add a brief error message next to the icon
+    brief_label = QLabel(f"<b>Error:</b> {exc_type.__name__}: {exc_value}")
+    brief_label.setWordWrap(True)
+    alert_layout.addWidget(brief_label)
+
+    main_layout.addLayout(alert_layout)
+
+    # Add a text area for the detailed traceback
+    detailed_text = QTextEdit()
+    detailed_text.setText(error_message)
+    detailed_text.setReadOnly(True)
+    main_layout.addWidget(detailed_text)
+
+    # Add an OK button to close the dialog
+    ok_button = QPushButton("OK")
+    ok_button.clicked.connect(error_dialog.accept)
+    main_layout.addWidget(ok_button)
+
+    # Set the layout and show the dialog
+    error_dialog.setLayout(main_layout)
+    error_dialog.exec()
+
+
 
 if __name__ == "__main__":
-  
-    with cProfile.Profile() as profile:  
+    # Set the custom exception handler
+    sys.excepthook = handle_exception
+    
+    with cProfile.Profile() as profile:
         app = QApplication(sys.argv)
         
         window = MainWindow()
         window.show()
         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
-        
-        app.exec()
+
+        try:
+            app.exec()
+        except Exception as e:
+            handle_exception(*sys.exc_info())
         
     results = pstats.Stats(profile).sort_stats(pstats.SortKey.TIME)
     results.dump_stats('profile_results.prof')
+    

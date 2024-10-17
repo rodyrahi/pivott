@@ -60,27 +60,6 @@ def create_jupyter_notebook(data, file_name):
     with open(f'{file_name}.ipynb', 'w') as f:
         json.dump(notebook, f)
 
-# Example usage
-data = {
-    "data_path": "F:/pivott/pivott/test_data.csv",
-    "drop_column": {
-        "col": ["raj"]
-    },
-    "dropna": {
-        "col": []
-    },
-    "impute": {
-        "col": ["city"],
-        "strategy": ["mode"]
-    },
-    "remove_outlier": {
-        "col": ["age"],
-        "strategy": ["iqr"]
-    },
-    "encode": {
-        "col": [],
-        "strategy": []
-    }
-}
 
-create_jupyter_notebook(data, "output_notebook")
+
+
