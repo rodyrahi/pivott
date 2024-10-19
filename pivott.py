@@ -16,7 +16,7 @@ from custom_widgets import MainButton , Button
 
 
 
-varsion = 1.1
+varsion = 1.2
 
 class DownloadThread(QThread):
     # Custom signal to emit when download is complete

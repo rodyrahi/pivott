@@ -37,15 +37,12 @@ class DataFrameInfoWidget(QWidget):
         # Display general DataFrame info
         num_rows = self.df.shape[0]
         num_cols = self.df.shape[1]
-        column_names = ', '.join(self.df.columns)
-        dtypes = ', '.join([str(dtype) for dtype in self.df.dtypes])
+        column_names_and_dtypes = ', '.join([f"(<b>{col}</b>,{dtype})" for col, dtype in zip(self.df.columns, self.df.dtypes)])
 
         info_text = (
-            f"<b>DataFrame General Info:</b><br>"
-            f"Rows: {num_rows}<br>"
-            f"Columns: {num_cols}<br>"
-            f"Column Names: {column_names}<br>"
-            f"Data Types: {dtypes}"
+            f"<b>Shape: ({num_rows} , {num_cols} )</b><br>"
+            f"Column Names <br> {column_names_and_dtypes}"
+            # f"Data Types: {dtypes}"
         )
         label = QLabel(info_text)
         label.setWordWrap(True)

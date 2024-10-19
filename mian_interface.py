@@ -98,9 +98,9 @@ class MainInterface(QWidget):
 
         self.dataframe_columns = self.main_df.columns
         print(self.dataframe_columns)
-        self.table_layout.addLayout(self.table_top_layout)
 
         self.table_layout.addWidget(self.table_widget)
+        self.table_layout.addLayout(self.table_top_layout)
 
         self.table_layout.addLayout(self.table_bottom_layout)
         
